@@ -28,8 +28,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -309,17 +309,16 @@ fun AddEditHabitScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Save + Pause + Delete — equal-width buttons with spacing
+            // Save (primary) + Pause (secondary) + Delete (destructive)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                // Save always shown
                 Button(
                     onClick = { viewModel.save(onSaved) },
                     modifier = Modifier
-                        .weight(if (uiState.isEditMode) 1f else 1f)
+                        .weight(1f)
                         .height(48.dp),
                     enabled = uiState.name.isNotBlank() && !uiState.isSaving
                 ) {
@@ -331,29 +330,27 @@ fun AddEditHabitScreen(
 
                 // Pause / Resume and Delete — only in edit mode
                 if (uiState.isEditMode) {
-                    Button(
+                    OutlinedButton(
                         onClick = {
                             if (uiState.isCurrentlyPaused) viewModel.resumeHabit(onSaved)
                             else viewModel.pauseHabit(onSaved)
                         },
-                        modifier = Modifier.weight(1f).height(48.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        modifier = Modifier.weight(1f).height(48.dp)
                     ) {
-                        Text(if (uiState.isCurrentlyPaused) "Resume" else "Pause")
+                        Text(
+                            if (uiState.isCurrentlyPaused) "Resume" else "Pause",
+                            maxLines = 1
+                        )
                     }
 
-                    Button(
+                    TextButton(
                         onClick = { showDeleteDialog = true },
-                        modifier = Modifier.weight(1f).height(48.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer,
-                            contentColor = MaterialTheme.colorScheme.onErrorContainer
-                        )
+                        modifier = Modifier.weight(1f).height(48.dp)
                     ) {
-                        Text("Delete")
+                        Text(
+                            "Delete",
+                            color = MaterialTheme.colorScheme.error
+                        )
                     }
                 }
             }

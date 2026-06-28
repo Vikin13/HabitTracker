@@ -47,6 +47,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.Slider
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -88,6 +89,10 @@ fun HomeScreen(
 
     var showSettings by remember { mutableStateOf(false) }
     var editTitleText by remember { mutableStateOf("") }
+    // Sync title from ViewModel (including persisted value) whenever dialog opens
+    LaunchedEffect(showSettings) {
+        if (showSettings) editTitleText = uiState.titleText
+    }
     var pendingImageUri by remember { mutableStateOf<Uri?>(null) }
 
     val imagePicker = rememberLauncherForActivityResult(
