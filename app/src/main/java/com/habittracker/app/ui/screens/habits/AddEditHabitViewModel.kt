@@ -1,11 +1,15 @@
 package com.habittracker.app.ui.screens.habits
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.habittracker.app.data.local.entity.isCurrentlyPaused
 import com.habittracker.app.data.repository.HabitRepository
+import com.habittracker.app.reminder.ReminderScheduler
+import com.habittracker.app.ui.widget.WidgetUpdateHelper
 import com.habittracker.app.util.DateUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,7 +27,8 @@ data class AddEditHabitUiState(
     val weeklyTarget: Int = 7,
     val isSaving: Boolean = false,
     val isEditMode: Boolean = false,
-    val isCurrentlyPaused: Boolean = false
+    val isCurrentlyPaused: Boolean = false,
+    val existingReminderTime: String? = null
 )
 
 val EmojiOptions = listOf(
@@ -40,7 +45,8 @@ val EmojiOptions = listOf(
 
 @HiltViewModel
 class AddEditHabitViewModel @Inject constructor(
-    private val repository: HabitRepository
+    private val repository: HabitRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AddEditHabitUiState())
@@ -64,7 +70,8 @@ class AddEditHabitViewModel @Inject constructor(
                     endDateMillis = habit.endDate,
                     weeklyTarget = habit.weeklyTarget.coerceIn(1, 7),
                     isEditMode = true,
-                    isCurrentlyPaused = habit.isCurrentlyPaused
+                    isCurrentlyPaused = habit.isCurrentlyPaused,
+                    existingReminderTime = habit.reminderTime
                 )
             }
         }
@@ -106,7 +113,9 @@ class AddEditHabitViewModel @Inject constructor(
         viewModelScope.launch {
             repository.getHabitById(id).first()?.let { habit ->
                 repository.deleteHabit(habit)
+                ReminderScheduler.cancel(context, id)
             }
+            WidgetUpdateHelper.notifyDataChanged(context)
             onDeleted()
         }
     }
@@ -115,7 +124,9 @@ class AddEditHabitViewModel @Inject constructor(
         val id = editingHabitId ?: return
         viewModelScope.launch {
             repository.pauseHabit(id)
+            ReminderScheduler.cancel(context, id)
             _uiState.value = _uiState.value.copy(isCurrentlyPaused = true)
+            WidgetUpdateHelper.notifyDataChanged(context)
             onDone()
         }
     }
@@ -124,7 +135,16 @@ class AddEditHabitViewModel @Inject constructor(
         val id = editingHabitId ?: return
         viewModelScope.launch {
             repository.resumeHabit(id)
+            val currentReminder = _uiState.value.reminderHour?.let { hour ->
+                _uiState.value.reminderMinute?.let { minute ->
+                    String.format("%02d:%02d", hour, minute)
+                }
+            }
+            if (currentReminder != null) {
+                ReminderScheduler.schedule(context, id, currentReminder)
+            }
             _uiState.value = _uiState.value.copy(isCurrentlyPaused = false)
+            WidgetUpdateHelper.notifyDataChanged(context)
             onDone()
         }
     }
@@ -157,7 +177,7 @@ class AddEditHabitViewModel @Inject constructor(
                     )
                 }
             } else {
-                repository.addHabit(
+                val newId = repository.addHabit(
                     name = state.name,
                     emoji = state.selectedEmoji,
                     reminderTime = reminderTime,
@@ -165,7 +185,19 @@ class AddEditHabitViewModel @Inject constructor(
                     weeklyTarget = weeklyTarget,
                     sortOrder = 0
                 )
+                editingHabitId = newId
             }
+
+            // Schedule or update reminder
+            val savedId = editingHabitId ?: return@launch
+            if (reminderTime != null) {
+                ReminderScheduler.schedule(context, savedId, reminderTime)
+            } else if (habitId != null) {
+                // Reminder was cleared → cancel old schedule
+                ReminderScheduler.cancel(context, habitId)
+            }
+
+            WidgetUpdateHelper.notifyDataChanged(context)
             onSaved()
         }
     }

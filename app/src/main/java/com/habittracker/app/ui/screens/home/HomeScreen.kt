@@ -7,6 +7,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -92,6 +94,9 @@ fun HomeScreen(
     }
     var pendingImageUri by remember { mutableStateOf<Uri?>(null) }
     var showClearConfirm by remember { mutableStateOf(false) }
+    var menuHabitId by remember { mutableStateOf<Long?>(null) }
+
+    val context = LocalContext.current
 
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -268,6 +273,18 @@ fun HomeScreen(
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
+                    TextButton(
+                        onClick = {
+                            shareApk(context)
+                            showSettings = false
+                        },
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    ) {
+                        Text(
+                            "Share APK",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
                 }
             },
             confirmButton = {
@@ -286,7 +303,6 @@ fun HomeScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         // Background image
         if (bg.type == BackgroundType.IMAGE) {
-            val context = LocalContext.current
             val painter = rememberUriPainter(bg.imageUri ?: "", context)
             if (painter != null) {
                 ComposeImage(
@@ -389,14 +405,46 @@ fun HomeScreen(
                     }
                 }
                 items(uiState.habits, key = { it.id }) { habit ->
-                    HabitItem(
-                        habit = habit,
-                        isCompleted = uiState.completedToday.contains(habit.id),
-                        isPaused = habit.isCurrentlyPaused,
-                        onToggle = { viewModel.toggleHabit(habit.id) },
-                        onClick = { },
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
-                    )
+                    Box {
+                        HabitItem(
+                            habit = habit,
+                            isCompleted = uiState.completedToday.contains(habit.id),
+                            isPaused = habit.isCurrentlyPaused,
+                            onToggle = { viewModel.toggleHabit(habit.id) },
+                            onClick = { },
+                            onLongClick = { menuHabitId = habit.id },
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
+                        )
+                        DropdownMenu(
+                            expanded = menuHabitId == habit.id,
+                            onDismissRequest = { menuHabitId = null }
+                        ) {
+                            if (habit.isCurrentlyPaused) {
+                                DropdownMenuItem(
+                                    text = { Text("Resume") },
+                                    onClick = {
+                                        menuHabitId = null
+                                        viewModel.resumeHabit(habit.id)
+                                    }
+                                )
+                            } else {
+                                DropdownMenuItem(
+                                    text = { Text("Pause") },
+                                    onClick = {
+                                        menuHabitId = null
+                                        viewModel.pauseHabit(habit.id)
+                                    }
+                                )
+                            }
+                            DropdownMenuItem(
+                                text = { Text("Delete", color = MaterialTheme.colorScheme.error) },
+                                onClick = {
+                                    menuHabitId = null
+                                    viewModel.deleteHabit(habit)
+                                }
+                            )
+                        }
+                    }
                 }
                 item { Spacer(modifier = Modifier.height(12.dp)) }
             }
@@ -562,6 +610,25 @@ private fun ImagePreviewDialog(
             TextButton(onClick = onCancel) { Text("Cancel") }
         }
     )
+}
+
+private fun shareApk(context: android.content.Context) {
+    try {
+        val apkFile = java.io.File(context.applicationInfo.sourceDir)
+        val apkUri = androidx.core.content.FileProvider.getUriForFile(
+            context,
+            "com.habittracker.app.fileprovider",
+            apkFile
+        )
+        val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+            type = "application/vnd.android.package-archive"
+            putExtra(android.content.Intent.EXTRA_STREAM, apkUri)
+            addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(android.content.Intent.createChooser(intent, "Share APK"))
+    } catch (_: Exception) {
+        // FileProvider may fail — silently ignore
+    }
 }
 
 @Composable

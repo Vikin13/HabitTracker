@@ -1,11 +1,14 @@
 package com.habittracker.app.ui.screens.calendar
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.habittracker.app.data.local.entity.HabitEntity
 import com.habittracker.app.data.local.entity.isActiveOn
 import com.habittracker.app.data.repository.HabitRepository
+import com.habittracker.app.ui.widget.WidgetUpdateHelper
 import com.habittracker.app.util.DateUtils
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -45,7 +48,8 @@ data class CalendarUiState(
 
 @HiltViewModel
 class CalendarViewModel @Inject constructor(
-    private val repository: HabitRepository
+    private val repository: HabitRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CalendarUiState())
@@ -59,8 +63,9 @@ class CalendarViewModel @Inject constructor(
             combine(
                 repository.allActiveHabits,
                 _currentMonth,
-                _refreshTrigger
-            ) { habits, yearMonth, _ ->
+                _refreshTrigger,
+                repository.anyRecordChange   // ← re-query when records table changes (e.g. widget toggle)
+            ) { habits, yearMonth, _, _ ->
                 val startDate = DateUtils.startOfDay(yearMonth.atDay(1))
                 val endDate = DateUtils.startOfNextDay(yearMonth.atEndOfMonth())
 
@@ -140,6 +145,7 @@ class CalendarViewModel @Inject constructor(
         viewModelScope.launch {
             val dateMillis = DateUtils.startOfDay(date)
             repository.toggleRecord(habitId, dateMillis)
+            WidgetUpdateHelper.notifyDataChanged(context)
             _refreshTrigger.value = System.currentTimeMillis()
             loadDayDetail(date)
         }

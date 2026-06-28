@@ -1,8 +1,10 @@
 package com.habittracker.app.ui.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.habittracker.app.data.local.entity.HabitEntity
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HabitItem(
     habit: HabitEntity,
@@ -39,6 +42,7 @@ fun HabitItem(
     isPaused: Boolean = false,
     onToggle: () -> Unit,
     onClick: () -> Unit,
+    onLongClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val checkColor by animateColorAsState(
@@ -50,7 +54,7 @@ fun HabitItem(
         modifier = modifier
             .fillMaxWidth()
             .then(if (isPaused) Modifier.alpha(0.6f) else Modifier)
-            .clickable(onClick = onClick),
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)

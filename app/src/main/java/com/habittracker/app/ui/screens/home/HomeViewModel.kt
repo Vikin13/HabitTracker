@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.habittracker.app.data.local.entity.HabitEntity
 import com.habittracker.app.data.local.entity.isActiveOn
 import com.habittracker.app.data.repository.HabitRepository
+import com.habittracker.app.reminder.ReminderScheduler
 import com.habittracker.app.ui.widget.WidgetUpdateHelper
 import com.habittracker.app.util.DateUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -114,6 +115,7 @@ class HomeViewModel @Inject constructor(
     fun deleteHabit(habit: HabitEntity) {
         viewModelScope.launch {
             repository.deleteHabit(habit)
+            ReminderScheduler.cancel(context, habit.id)
             WidgetUpdateHelper.notifyDataChanged(context)
         }
     }
@@ -121,6 +123,7 @@ class HomeViewModel @Inject constructor(
     fun pauseHabit(habitId: Long) {
         viewModelScope.launch {
             repository.pauseHabit(habitId)
+            ReminderScheduler.cancel(context, habitId)
             _weeklyRefreshTrigger.value = System.currentTimeMillis()
             WidgetUpdateHelper.notifyDataChanged(context)
         }
@@ -129,6 +132,12 @@ class HomeViewModel @Inject constructor(
     fun resumeHabit(habitId: Long) {
         viewModelScope.launch {
             repository.resumeHabit(habitId)
+            // Re-fetch the habit to get its reminder time
+            repository.getHabitById(habitId).first()?.let { habit ->
+                if (habit.reminderTime != null) {
+                    ReminderScheduler.schedule(context, habitId, habit.reminderTime)
+                }
+            }
             _weeklyRefreshTrigger.value = System.currentTimeMillis()
             WidgetUpdateHelper.notifyDataChanged(context)
         }
