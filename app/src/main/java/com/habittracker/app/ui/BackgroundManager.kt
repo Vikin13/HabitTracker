@@ -82,11 +82,9 @@ val backgroundPresets = listOf(
     0xFFE3F2FD to "Sky",
     0xFFE8F5E9 to "Mint",
     0xFFF3E5F5 to "Lavender",
-    0xFFFFFDE7 to "Lemon",
     // Dark presets
     0xFF1C1B1F to "Dark",
     0xFF2D2D2D to "Charcoal",
-    0xFF1A237E to "Navy",
     0xFF1B5E20 to "Forest"
 )
 
