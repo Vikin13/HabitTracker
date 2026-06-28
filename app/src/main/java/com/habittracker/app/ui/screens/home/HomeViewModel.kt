@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.habittracker.app.data.local.entity.HabitEntity
 import com.habittracker.app.data.local.entity.isActiveOn
 import com.habittracker.app.data.repository.HabitRepository
+import com.habittracker.app.ui.widget.WidgetUpdateHelper
 import com.habittracker.app.util.DateUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -93,6 +94,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             repository.toggleRecord(habitId, _uiState.value.todayDate)
             _weeklyRefreshTrigger.value = System.currentTimeMillis()
+            WidgetUpdateHelper.notifyDataChanged(context)
         }
     }
 
@@ -100,6 +102,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             repository.toggleRecord(habitId, dateMillis)
             _weeklyRefreshTrigger.value = System.currentTimeMillis()
+            WidgetUpdateHelper.notifyDataChanged(context)
         }
     }
 
@@ -111,6 +114,7 @@ class HomeViewModel @Inject constructor(
     fun deleteHabit(habit: HabitEntity) {
         viewModelScope.launch {
             repository.deleteHabit(habit)
+            WidgetUpdateHelper.notifyDataChanged(context)
         }
     }
 
@@ -118,6 +122,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             repository.pauseHabit(habitId)
             _weeklyRefreshTrigger.value = System.currentTimeMillis()
+            WidgetUpdateHelper.notifyDataChanged(context)
         }
     }
 
@@ -125,6 +130,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             repository.resumeHabit(habitId)
             _weeklyRefreshTrigger.value = System.currentTimeMillis()
+            WidgetUpdateHelper.notifyDataChanged(context)
         }
     }
 
@@ -132,6 +138,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             repository.clearAll()
             _weeklyRefreshTrigger.value = System.currentTimeMillis()
+            WidgetUpdateHelper.notifyDataChanged(context)
         }
     }
 

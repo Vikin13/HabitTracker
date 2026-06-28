@@ -1,9 +1,160 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Weekly habit grid widget – placeholder. 7 day cells populated programmatically -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/grid_container"
+    android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="horizontal"
-    android:padding="4dp" />
+    android:background="@drawable/widget_bg"
+    android:paddingHorizontal="4dp"
+    android:paddingVertical="6dp">
+
+    <!-- Day 0 - Mon -->
+    <LinearLayout
+        android:id="@+id/cell_0"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/label_0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="M"
+            android:textSize="10sp"
+            android:textColor="#888888" />
+        <ImageView
+            android:id="@+id/dot_0"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginTop="2dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/cell_1"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/label_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="T"
+            android:textSize="10sp"
+            android:textColor="#888888" />
+        <ImageView
+            android:id="@+id/dot_1"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginTop="2dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/cell_2"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/label_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="W"
+            android:textSize="10sp"
+            android:textColor="#888888" />
+        <ImageView
+            android:id="@+id/dot_2"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginTop="2dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/cell_3"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/label_3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="T"
+            android:textSize="10sp"
+            android:textColor="#888888" />
+        <ImageView
+            android:id="@+id/dot_3"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginTop="2dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/cell_4"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/label_4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="F"
+            android:textSize="10sp"
+            android:textColor="#888888" />
+        <ImageView
+            android:id="@+id/dot_4"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginTop="2dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/cell_5"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/label_5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="S"
+            android:textSize="10sp"
+            android:textColor="#888888" />
+        <ImageView
+            android:id="@+id/dot_5"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginTop="2dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/cell_6"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/label_6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="S"
+            android:textSize="10sp"
+            android:textColor="#888888" />
+        <ImageView
+            android:id="@+id/dot_6"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginTop="2dp" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -5,6 +5,7 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.net.Uri
 import com.habittracker.app.data.repository.WidgetRepository
+import com.habittracker.app.ui.widget.WidgetUpdateHelper
 import com.habittracker.app.util.DateUtils
 import kotlinx.coroutines.runBlocking
 
@@ -35,6 +36,8 @@ class HabitContentProvider : ContentProvider() {
         runBlocking {
             repo.toggleRecord(habitId, dateMillis)
         }
+
+        WidgetUpdateHelper.notifyDataChanged(context)
 
         // Append dateMillis so the caller can read back the new state
         return uri.buildUpon().appendPath(dateMillis.toString()).build()
