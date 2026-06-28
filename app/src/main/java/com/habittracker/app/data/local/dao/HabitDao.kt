@@ -12,12 +12,12 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface HabitDao {
 
-    /** Active first (isArchived=0), then paused (isArchived=1). */
-    @Query("SELECT * FROM habits WHERE isActive = 1 ORDER BY isArchived ASC, sortOrder ASC, name ASC")
+    /** Active (not currently paused) first, then paused at end. */
+    @Query("SELECT * FROM habits WHERE isActive = 1 ORDER BY (pausedAt IS NOT NULL AND resumedAt IS NULL) ASC, sortOrder ASC, name ASC")
     fun getAllActiveHabits(): Flow<List<HabitEntity>>
 
     /** All non-deleted habits, active first then paused. */
-    @Query("SELECT * FROM habits WHERE isActive = 1 ORDER BY isArchived ASC, sortOrder ASC, name ASC")
+    @Query("SELECT * FROM habits WHERE isActive = 1 ORDER BY (pausedAt IS NOT NULL AND resumedAt IS NULL) ASC, sortOrder ASC, name ASC")
     fun getAllVisibleHabits(): Flow<List<HabitEntity>>
 
     /** Every habit including deleted ones. */
@@ -39,9 +39,9 @@ interface HabitDao {
     @Query("UPDATE habits SET sortOrder = :order WHERE id = :habitId")
     suspend fun updateSortOrder(habitId: Long, order: Int)
 
-    @Query("UPDATE habits SET isArchived = 1 WHERE id = :habitId")
-    suspend fun pauseHabit(habitId: Long)
+    @Query("UPDATE habits SET pausedAt = :pausedAt, resumedAt = NULL WHERE id = :habitId")
+    suspend fun pauseHabit(habitId: Long, pausedAt: Long = System.currentTimeMillis())
 
-    @Query("UPDATE habits SET isArchived = 0 WHERE id = :habitId")
-    suspend fun resumeHabit(habitId: Long)
+    @Query("UPDATE habits SET resumedAt = :resumedAt WHERE id = :habitId")
+    suspend fun resumeHabit(habitId: Long, resumedAt: Long = System.currentTimeMillis())
 }
