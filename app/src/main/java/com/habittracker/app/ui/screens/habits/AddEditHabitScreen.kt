@@ -28,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -299,7 +300,7 @@ fun AddEditHabitScreen(
             // Number picker dialog
             if (showTargetPicker) {
                 NumberPickerDialog(
-                    currentValue = uiState.weeklyTarget,
+                    currentValue = uiState.weeklyTarget.coerceIn(1, 7),
                     range = 1..7,
                     onSelect = { viewModel.onWeeklyTargetChanged(it) },
                     onDismiss = { showTargetPicker = false }
@@ -308,45 +309,51 @@ fun AddEditHabitScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Save + Delete on the same row
+            // Save + Pause + Delete — equal-width buttons with spacing
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
+                // Save always shown
                 Button(
                     onClick = { viewModel.save(onSaved) },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(if (uiState.isEditMode) 1f else 1f)
+                        .height(48.dp),
                     enabled = uiState.name.isNotBlank() && !uiState.isSaving
                 ) {
                     Text(
                         if (uiState.isSaving) "Saving..." else "Save",
-                        modifier = Modifier.padding(vertical = 8.dp)
+                        modifier = Modifier.padding(vertical = 4.dp)
                     )
                 }
 
-                // Pause / Resume — only in edit mode
+                // Pause / Resume and Delete — only in edit mode
                 if (uiState.isEditMode) {
-                    TextButton(
+                    Button(
                         onClick = {
                             if (uiState.isCurrentlyPaused) viewModel.resumeHabit(onSaved)
                             else viewModel.pauseHabit(onSaved)
-                        }
+                        },
+                        modifier = Modifier.weight(1f).height(48.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     ) {
-                        Text(
-                            if (uiState.isCurrentlyPaused) "Resume" else "Pause",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Text(if (uiState.isCurrentlyPaused) "Resume" else "Pause")
                     }
-                }
 
-                // Delete — only in edit mode
-                if (uiState.isEditMode) {
-                    TextButton(onClick = { showDeleteDialog = true }) {
-                        Text(
-                            "Delete",
-                            color = MaterialTheme.colorScheme.error
+                    Button(
+                        onClick = { showDeleteDialog = true },
+                        modifier = Modifier.weight(1f).height(48.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer
                         )
+                    ) {
+                        Text("Delete")
                     }
                 }
             }
@@ -366,8 +373,10 @@ private fun NumberPickerDialog(
     onDismiss: () -> Unit
 ) {
     val items = range.toList()
+    // Start scrolled so the current value appears near the viewport center
+    val initialIndex = ((currentValue - range.first) - 2).coerceAtLeast(0)
     val listState = rememberLazyListState(
-        initialFirstVisibleItemIndex = (currentValue - range.first).coerceAtLeast(0)
+        initialFirstVisibleItemIndex = initialIndex
     )
 
     // Item that is visually closest to the viewport center

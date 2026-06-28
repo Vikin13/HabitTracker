@@ -16,21 +16,30 @@ import kotlinx.coroutines.flow.asStateFlow
 
 enum class BackgroundType { SYSTEM, COLOR, IMAGE }
 
+/** How the Material color scheme should be selected. */
+enum class SchemeMode { SYSTEM, LIGHT, DARK }
+
 data class BackgroundSettings(
     val type: BackgroundType = BackgroundType.SYSTEM,
     val colorIndex: Int = 0,
     val imageUri: String? = null,
     val imageScale: Float = 1.0f,
     val imageOffsetXDp: Float = 0f,
-    val imageOffsetYDp: Float = 0f
+    val imageOffsetYDp: Float = 0f,
+    /** Override for Material color scheme (text/surface colors). */
+    val schemeMode: SchemeMode = SchemeMode.SYSTEM
 )
 
 object BackgroundManager {
     private val _settings = MutableStateFlow(BackgroundSettings())
     val settings: StateFlow<BackgroundSettings> = _settings.asStateFlow()
 
+    fun setSchemeMode(mode: SchemeMode) {
+        _settings.value = _settings.value.copy(schemeMode = mode)
+    }
+
     fun setColorIndex(index: Int) {
-        _settings.value = BackgroundSettings(
+        _settings.value = _settings.value.copy(
             type = BackgroundType.COLOR,
             colorIndex = index,
             imageUri = null
@@ -38,7 +47,7 @@ object BackgroundManager {
     }
 
     fun setImageUri(uri: String, scale: Float = 1.0f, offsetXDp: Float = 0f, offsetYDp: Float = 0f) {
-        _settings.value = BackgroundSettings(
+        _settings.value = _settings.value.copy(
             type = BackgroundType.IMAGE,
             colorIndex = 0,
             imageUri = uri,
@@ -56,7 +65,7 @@ object BackgroundManager {
         type: BackgroundType, colorIndex: Int, imageUri: String?,
         imageScale: Float = 1.0f, imageOffsetXDp: Float = 0f, imageOffsetYDp: Float = 0f
     ) {
-        _settings.value = BackgroundSettings(
+        _settings.value = _settings.value.copy(
             type = type,
             colorIndex = colorIndex,
             imageUri = imageUri,
@@ -85,6 +94,22 @@ val backgroundPresets = listOf(
  * Returns the scrim opacity needed when this background is applied.
  * A dark background needs a dark overlay so MaterialTheme colors remain readable.
  */
+/** Returns true if the current background is perceived as dark (should use dark color scheme). */
+fun BackgroundSettings.isBackgroundDark(): Boolean {
+    return when (type) {
+        BackgroundType.IMAGE -> true  // image backgrounds always get dark scheme + scrim
+        BackgroundType.COLOR -> {
+            val colorInt = backgroundPresets.getOrElse(colorIndex) { 0xFFFFFFFF to "Default" }.first
+            val r = android.graphics.Color.red(colorInt) / 255f
+            val g = android.graphics.Color.green(colorInt) / 255f
+            val b = android.graphics.Color.blue(colorInt) / 255f
+            val luminance = 0.2126f * r + 0.7152f * g + 0.0722f * b
+            luminance < 0.5f
+        }
+        BackgroundType.SYSTEM -> false
+    }
+}
+
 fun BackgroundSettings.scrimAlpha(): Float {
     return when (type) {
         BackgroundType.IMAGE -> 0.18f

@@ -62,7 +62,7 @@ class AddEditHabitViewModel @Inject constructor(
                     reminderHour = hour,
                     reminderMinute = minute,
                     endDateMillis = habit.endDate,
-                    weeklyTarget = habit.weeklyTarget,
+                    weeklyTarget = habit.weeklyTarget.coerceIn(1, 7),
                     isEditMode = true,
                     isCurrentlyPaused = habit.isCurrentlyPaused
                 )

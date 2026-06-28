@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -69,6 +70,7 @@ import com.habittracker.app.data.local.entity.isCurrentlyPaused
 import kotlin.math.roundToInt
 import com.habittracker.app.ui.BackgroundManager
 import com.habittracker.app.ui.BackgroundType
+import com.habittracker.app.ui.SchemeMode
 import com.habittracker.app.ui.backgroundPresets
 import com.habittracker.app.ui.components.HabitItem
 import com.habittracker.app.ui.rememberUriPainter
@@ -178,6 +180,32 @@ fun HomeScreen(
                     if (bg.type != BackgroundType.SYSTEM) {
                         TextButton(onClick = { BackgroundManager.resetToSystem() }) {
                             Text("Reset to system default")
+                        }
+                    }
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                    Text(
+                        text = "Color scheme",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        listOf(
+                            SchemeMode.SYSTEM to "Auto",
+                            SchemeMode.LIGHT to "Light",
+                            SchemeMode.DARK to "Dark"
+                        ).forEach { (mode, label) ->
+                            val isActive = bg.schemeMode == mode
+                            FilterChip(
+                                selected = isActive,
+                                onClick = { BackgroundManager.setSchemeMode(mode) },
+                                label = { Text(label) },
+                                modifier = Modifier.weight(1f)
+                            )
                         }
                     }
                 }
