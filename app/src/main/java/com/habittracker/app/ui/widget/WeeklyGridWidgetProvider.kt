@@ -46,36 +46,30 @@ class WeeklyGridWidgetProvider : AppWidgetProvider() {
         appWidgetIds: IntArray
     ) {
         CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val repo = WidgetRepository(context)
-                val weekDays = repo.getCurrentWeekDays()
+            val repo = WidgetRepository(context)
+            val weekDays = repo.getCurrentWeekDays()
 
-                for (widgetId in appWidgetIds) {
-                    val views = buildWeekGridViews(context, weekDays)
+            for (widgetId in appWidgetIds) {
+                val views = buildWeekGridViews(context, weekDays)
 
-                    val tapIntent = Intent(context, MainActivity::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    }
-                    val tapPending = PendingIntent.getActivity(
-                        context, widgetId, tapIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                    )
-                    views.setOnClickPendingIntent(R.id.widget_root, tapPending)
-
-                    withContext(Dispatchers.Main) {
-                        appWidgetManager.updateAppWidget(widgetId, views)
-                    }
+                val tapIntent = Intent(context, MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 }
-            } catch (_: Exception) {
+                val tapPending = PendingIntent.getActivity(
+                    context, widgetId, tapIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                views.setOnClickPendingIntent(R.id.widget_root, tapPending)
+
+                withContext(Dispatchers.Main) {
+                    appWidgetManager.updateAppWidget(widgetId, views)
+                }
             }
         }
     }
 
     private fun buildWeekGridViews(context: Context, weekDays: List<WidgetRepository.WidgetDay>): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_weekly_grid)
-        val completedColor = 0xFF6750A4.toInt()
-        val missedColor = 0xFFBDBDBD.toInt()
-        val todayColor = 0xFF6750A4.toInt()
 
         weekDays.forEachIndexed { index, day ->
             val labelId = when (index) {
@@ -90,15 +84,13 @@ class WeeklyGridWidgetProvider : AppWidgetProvider() {
             }
 
             views.setTextViewText(labelId, DAY_LABELS[index])
-            views.setTextColor(labelId, if (day.isToday) todayColor else 0xFF888888.toInt())
+            views.setTextColor(labelId, 0xFF888888.toInt())
 
-            if (day.isCompleted) {
-                views.setImageViewResource(dotId, R.drawable.ic_circle_filled)
-                views.setInt(dotId, "setColorFilter", completedColor)
-            } else {
-                views.setImageViewResource(dotId, R.drawable.ic_circle_outline)
-                views.setInt(dotId, "setColorFilter", missedColor)
-            }
+            views.setImageViewResource(
+                dotId,
+                if (day.isCompleted) R.drawable.ic_circle_completed
+                else R.drawable.ic_circle_missed
+            )
         }
 
         return views

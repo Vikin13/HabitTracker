@@ -6,8 +6,7 @@
     android:gravity="center"
     android:orientation="horizontal"
     android:background="@drawable/widget_bg"
-    android:paddingHorizontal="4dp"
-    android:paddingVertical="6dp">
+    android:padding="4dp">
 
     <!-- Day 0 - Mon -->
     <LinearLayout
