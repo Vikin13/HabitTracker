@@ -9,7 +9,7 @@ import android.content.Intent
 import android.widget.RemoteViews
 import com.habittracker.app.R
 import com.habittracker.app.data.repository.WidgetRepository
-import com.habittracker.app.ui.MainActivity
+import com.habittracker.app.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
