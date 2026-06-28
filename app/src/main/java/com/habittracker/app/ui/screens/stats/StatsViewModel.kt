@@ -58,7 +58,7 @@ class StatsViewModel @Inject constructor(
 
     fun refresh() {
         viewModelScope.launch {
-            repository.allHabits.collect { habits ->
+            repository.allVisibleHabits.collect { habits ->
                 val stats = habits.map { calculateStat(it) }
                 _uiState.value = StatsUiState(stats = stats, isLoading = false)
             }

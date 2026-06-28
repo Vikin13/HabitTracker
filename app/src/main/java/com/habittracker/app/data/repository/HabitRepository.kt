@@ -17,9 +17,9 @@ class HabitRepository @Inject constructor(
 
     val allActiveHabits: Flow<List<HabitEntity>> = habitDao.getAllActiveHabits()
 
-    val allHabits: Flow<List<HabitEntity>> = habitDao.getAllHabits()
+    val allVisibleHabits: Flow<List<HabitEntity>> = habitDao.getAllVisibleHabits()
 
-    val archivedHabits: Flow<List<HabitEntity>> = habitDao.getArchivedHabits()
+    val allHabits: Flow<List<HabitEntity>> = habitDao.getAllHabits()
 
     fun getHabitById(habitId: Long): Flow<HabitEntity?> = habitDao.getHabitById(habitId)
 
@@ -47,11 +47,11 @@ class HabitRepository @Inject constructor(
 
     suspend fun deleteHabit(habit: HabitEntity) = habitDao.delete(habit)
 
-    suspend fun archiveHabit(habitId: Long) = habitDao.archiveHabit(habitId)
+    suspend fun pauseHabit(habitId: Long) = habitDao.pauseHabit(habitId)
 
-    suspend fun unarchiveHabit(habitId: Long) = habitDao.unarchiveHabit(habitId)
+    suspend fun resumeHabit(habitId: Long) = habitDao.resumeHabit(habitId)
 
-    suspend fun updateSortOrder(habitId: Long, order: Int) = habitDao.updateSortOrder(habitId)
+    suspend fun updateSortOrder(habitId: Long, order: Int) = habitDao.updateSortOrder(habitId, order)
 
     // ── Records ─────────────────────────────────────────────────
 

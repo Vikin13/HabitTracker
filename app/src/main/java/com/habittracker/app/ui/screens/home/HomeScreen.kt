@@ -69,6 +69,7 @@ import kotlin.math.roundToInt
 import com.habittracker.app.ui.BackgroundManager
 import com.habittracker.app.ui.BackgroundType
 import com.habittracker.app.ui.backgroundPresets
+import com.habittracker.app.ui.components.HabitItem
 import com.habittracker.app.ui.rememberUriPainter
 import com.habittracker.app.ui.scrimAlpha
 import androidx.compose.foundation.Image as ComposeImage
@@ -177,25 +178,6 @@ fun HomeScreen(
                         TextButton(onClick = { BackgroundManager.resetToSystem() }) {
                             Text("Reset to system default")
                         }
-                    }
-
-                    HorizontalDivider()
-
-                    // Archive toggle
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Show archived (${uiState.archivedCount})",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        androidx.compose.material3.Switch(
-                            checked = uiState.showArchived,
-                            onCheckedChange = { viewModel.toggleShowArchived() }
-                        )
                     }
                 }
             },
@@ -321,6 +303,7 @@ fun HomeScreen(
                     HabitItem(
                         habit = habit,
                         isCompleted = uiState.completedToday.contains(habit.id),
+                        isPaused = habit.isArchived,
                         onToggle = { viewModel.toggleHabit(habit.id) },
                         onClick = { },
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)

@@ -323,8 +323,18 @@ private fun HabitStatCard(
             Text(text = stat.habit.emoji, style = MaterialTheme.typography.headlineMedium)
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(stat.habit.name, style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(stat.habit.name, style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold)
+                    if (stat.habit.isArchived) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            "(Paused)",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        )
+                    }
+                }
                 Text(
                     "${stat.totalDays}d · ${stat.completedDays}d done · 🔥${stat.currentStreak}d (best ${stat.bestStreak})",
                     style = MaterialTheme.typography.bodySmall,

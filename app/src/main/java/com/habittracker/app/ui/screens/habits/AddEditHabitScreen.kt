@@ -322,16 +322,16 @@ fun AddEditHabitScreen(
                     )
                 }
 
-                // Archive / Unarchive — only in edit mode
+                // Pause / Resume — only in edit mode
                 if (uiState.isEditMode) {
                     TextButton(
                         onClick = {
-                            if (uiState.isArchived) viewModel.unarchiveHabit(onSaved)
-                            else viewModel.archiveHabit(onSaved)
+                            if (uiState.isArchived) viewModel.resumeHabit(onSaved)
+                            else viewModel.pauseHabit(onSaved)
                         }
                     ) {
                         Text(
-                            if (uiState.isArchived) "Restore" else "Archive",
+                            if (uiState.isArchived) "Resume" else "Pause",
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }

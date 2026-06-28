@@ -23,13 +23,9 @@ data class HomeUiState(
     val weeklyCompletions: Map<Long, Set<Long>> = emptyMap(),
     val todayDate: Long = DateUtils.todayMillis(),
     val titleText: String = "Today",
-    val showArchived: Boolean = false,
-    val archivedCount: Int = 0,
 
     val isLoading: Boolean = true
 )
-
-
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -41,7 +37,6 @@ class HomeViewModel @Inject constructor(
 
     // Incremented on every toggle to trigger weekly grid refresh
     private val _weeklyRefreshTrigger = MutableStateFlow(0L)
-    private val _showArchived = MutableStateFlow(false)
 
     private val weekDates: List<LocalDate>
     private val weekStart: Long
@@ -61,17 +56,13 @@ class HomeViewModel @Inject constructor(
             todayDate = today
         )
 
-        // Reactive chain: all habits + today records + archive toggle + trigger
+        // Reactive chain: active habits (active first, paused last) + today records + trigger
         viewModelScope.launch {
             combine(
-                repository.allHabits,
+                repository.allActiveHabits,
                 repository.getTodayRecords(today),
-                _showArchived,
                 _weeklyRefreshTrigger
-            ) { allHabits, todayRecords, showArchived, _ ->
-                val habits = if (showArchived) allHabits.filter { it.isArchived }
-                             else allHabits.filter { it.isActive && !it.isArchived }
-                val archivedCount = allHabits.count { it.isArchived }
+            ) { habits, todayRecords, _ ->
                 val completedSet = todayRecords.map { it.habitId }.toSet()
                 val weeklyMap = mutableMapOf<Long, Set<Long>>()
                 habits.forEach { habit ->
@@ -80,18 +71,12 @@ class HomeViewModel @Inject constructor(
                 }
                 _uiState.value = _uiState.value.copy(
                     habits = habits,
-                    showArchived = showArchived,
-                    archivedCount = archivedCount,
                     completedToday = completedSet,
                     weeklyCompletions = weeklyMap,
                     isLoading = false
                 )
             }.collect { }
         }
-    }
-
-    fun toggleShowArchived() {
-        _showArchived.value = !_showArchived.value
     }
 
     fun toggleHabit(habitId: Long) {
@@ -118,16 +103,16 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun archiveHabit(habitId: Long) {
+    fun pauseHabit(habitId: Long) {
         viewModelScope.launch {
-            repository.archiveHabit(habitId)
+            repository.pauseHabit(habitId)
             _weeklyRefreshTrigger.value = System.currentTimeMillis()
         }
     }
 
-    fun unarchiveHabit(habitId: Long) {
+    fun resumeHabit(habitId: Long) {
         viewModelScope.launch {
-            repository.unarchiveHabit(habitId)
+            repository.resumeHabit(habitId)
             _weeklyRefreshTrigger.value = System.currentTimeMillis()
         }
     }

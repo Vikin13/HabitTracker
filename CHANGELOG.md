@@ -52,8 +52,9 @@
 - **Save/Delete 同行** — Save 按钮和 Delete 按钮同一行左右分布
 - **统计 Rate 修复** — 计算时考虑 endDate，只统计习惯实际活跃天数
 - **统计弹窗丰富** — 新增 Missed Days、Best Streak、Weekly Trend（近5周周完成数）
-- **Habit 归档功能** — 新增 isArchived 字段 + Room 迁移（v3→v4），编辑页可 Archive/Restore
-- **Home 归档筛选** — 设置弹窗新增 Show archived 开关，可切换查看已归档习惯
+- **Habit 暂停功能** — 基于 isArchived 字段，编辑页可 Pause/Resume
+- **暂停项排末尾** — DAO 查询按 isArchived ASC 排序，活跃在前暂停在后
+- **暂停可视化** — 主页/统计页暂停习惯半透明 + (Paused) 标签，隐藏打卡圈
 
 ### 修复记录
 - 修复 SwipeToDismissBox 交互限制 → 改用自定义 Animatable 实现

@@ -110,7 +110,7 @@ class AddEditHabitViewModel @Inject constructor(
         }
     }
 
-    fun archiveHabit(onDone: () -> Unit) {
+    fun pauseHabit(onDone: () -> Unit) {
         val id = editingHabitId ?: return
         viewModelScope.launch {
             repository.getHabitById(id).first()?.let { habit ->
@@ -120,7 +120,7 @@ class AddEditHabitViewModel @Inject constructor(
         }
     }
 
-    fun unarchiveHabit(onDone: () -> Unit) {
+    fun resumeHabit(onDone: () -> Unit) {
         val id = editingHabitId ?: return
         viewModelScope.launch {
             repository.getHabitById(id).first()?.let { habit ->
