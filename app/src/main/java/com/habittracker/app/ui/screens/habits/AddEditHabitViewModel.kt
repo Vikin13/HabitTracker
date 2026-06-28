@@ -2,6 +2,7 @@ package com.habittracker.app.ui.screens.habits
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.habittracker.app.data.local.entity.isCurrentlyPaused
 import com.habittracker.app.data.repository.HabitRepository
 import com.habittracker.app.util.DateUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,10 +20,10 @@ data class AddEditHabitUiState(
     val reminderMinute: Int? = null,
     val endDateMillis: Long? = null,
     val endDateError: String? = null,
-    val weeklyTarget: Int = 0,
+    val weeklyTarget: Int = 7,
     val isSaving: Boolean = false,
     val isEditMode: Boolean = false,
-    val isArchived: Boolean = false
+    val isCurrentlyPaused: Boolean = false
 )
 
 val EmojiOptions = listOf(
@@ -63,7 +64,7 @@ class AddEditHabitViewModel @Inject constructor(
                     endDateMillis = habit.endDate,
                     weeklyTarget = habit.weeklyTarget,
                     isEditMode = true,
-                    isArchived = habit.isArchived
+                    isCurrentlyPaused = habit.isCurrentlyPaused
                 )
             }
         }
@@ -113,9 +114,8 @@ class AddEditHabitViewModel @Inject constructor(
     fun pauseHabit(onDone: () -> Unit) {
         val id = editingHabitId ?: return
         viewModelScope.launch {
-            repository.getHabitById(id).first()?.let { habit ->
-                repository.updateHabit(habit.copy(isArchived = true))
-            }
+            repository.pauseHabit(id)
+            _uiState.value = _uiState.value.copy(isCurrentlyPaused = true)
             onDone()
         }
     }
@@ -123,9 +123,8 @@ class AddEditHabitViewModel @Inject constructor(
     fun resumeHabit(onDone: () -> Unit) {
         val id = editingHabitId ?: return
         viewModelScope.launch {
-            repository.getHabitById(id).first()?.let { habit ->
-                repository.updateHabit(habit.copy(isArchived = false))
-            }
+            repository.resumeHabit(id)
+            _uiState.value = _uiState.value.copy(isCurrentlyPaused = false)
             onDone()
         }
     }

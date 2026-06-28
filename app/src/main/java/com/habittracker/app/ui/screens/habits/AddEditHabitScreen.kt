@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -45,6 +46,7 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,6 +57,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlin.math.abs
+import kotlin.math.absoluteValue
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -285,11 +289,10 @@ fun AddEditHabitScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )
                 Text(
-                    text = if (uiState.weeklyTarget > 0) "${uiState.weeklyTarget} times / week" else "Not set",
+                    text = "${uiState.weeklyTarget} times / week",
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.clickable { showTargetPicker = true },
-                    color = if (uiState.weeklyTarget > 0) MaterialTheme.colorScheme.onSurface
-                            else MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
@@ -297,7 +300,7 @@ fun AddEditHabitScreen(
             if (showTargetPicker) {
                 NumberPickerDialog(
                     currentValue = uiState.weeklyTarget,
-                    range = 0..31,
+                    range = 1..7,
                     onSelect = { viewModel.onWeeklyTargetChanged(it) },
                     onDismiss = { showTargetPicker = false }
                 )
@@ -326,12 +329,12 @@ fun AddEditHabitScreen(
                 if (uiState.isEditMode) {
                     TextButton(
                         onClick = {
-                            if (uiState.isArchived) viewModel.resumeHabit(onSaved)
+                            if (uiState.isCurrentlyPaused) viewModel.resumeHabit(onSaved)
                             else viewModel.pauseHabit(onSaved)
                         }
                     ) {
                         Text(
-                            if (uiState.isArchived) "Resume" else "Pause",
+                            if (uiState.isCurrentlyPaused) "Resume" else "Pause",
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -353,7 +356,7 @@ fun AddEditHabitScreen(
     }
 }
 
-// ── Scroll-wheel Number Picker Dialog ──────────────────────
+// ── Wheel-style Number Picker Dialog ──────────────────────
 
 @Composable
 private fun NumberPickerDialog(
@@ -362,9 +365,24 @@ private fun NumberPickerDialog(
     onSelect: (Int) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val items = range.toList()
     val listState = rememberLazyListState(
         initialFirstVisibleItemIndex = (currentValue - range.first).coerceAtLeast(0)
     )
+
+    // Item that is visually closest to the viewport center
+    val centerIndex by remember {
+        derivedStateOf {
+            val info = listState.layoutInfo
+            if (info.visibleItemsInfo.isEmpty()) 0
+            else {
+                val viewCenter = info.viewportStartOffset + info.viewportEndOffset / 2
+                info.visibleItemsInfo
+                    .minByOrNull { item: LazyListItemInfo -> abs(item.offset + item.size / 2 - viewCenter) }
+                    ?.index ?: 0
+            }
+        }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -380,39 +398,24 @@ private fun NumberPickerDialog(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp),
-                contentAlignment = Alignment.Center
+                    .height(200.dp)
             ) {
-                // Highlight bar
-                HorizontalDivider(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .fillMaxWidth(0.7f),
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-                )
-                HorizontalDivider(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .fillMaxWidth(0.7f)
-                        .padding(top = 40.dp),
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-                )
-
                 LazyColumn(
                     state = listState,
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    itemsIndexed(range.toList()) { index, number ->
-                        val isSelected = listState.firstVisibleItemIndex == index
+                    itemsIndexed(items) { index, number ->
+                        val isSelected = centerIndex == index
                         Text(
                             text = number.toString(),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { onSelect(number) }
-                                .padding(vertical = 8.dp),
+                                .clickable { onSelect(number); onDismiss() }
+                                .padding(vertical = 10.dp),
                             textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.titleLarge,
+                            style = if (isSelected) MaterialTheme.typography.headlineMedium
+                                    else MaterialTheme.typography.titleLarge,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                             color = if (isSelected) MaterialTheme.colorScheme.primary
                                     else MaterialTheme.colorScheme.onSurface
@@ -422,10 +425,8 @@ private fun NumberPickerDialog(
             }
         },
         confirmButton = {
-            val selectedIndex = listState.firstVisibleItemIndex
-            val selectedNumber = range.elementAtOrElse(selectedIndex) { currentValue }
             TextButton(onClick = {
-                onSelect(selectedNumber)
+                onSelect(items.getOrElse(centerIndex) { currentValue })
                 onDismiss()
             }) { Text("OK") }
         },
