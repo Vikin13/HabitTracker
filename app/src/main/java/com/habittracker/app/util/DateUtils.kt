@@ -52,6 +52,16 @@ object DateUtils {
             .toEpochMilli()
     }
 
+    /** Get the Monday of the current week (ISO-8601). */
+    fun currentWeekStart(): LocalDate {
+        val today = LocalDate.now()
+        val dayOfWeek = today.dayOfWeek.value  // 1=Mon … 7=Sun
+        return today.minusDays((dayOfWeek - 1).toLong())
+    }
+
+    /** Get the Sunday of the current week. */
+    fun currentWeekEnd(): LocalDate = currentWeekStart().plusDays(6)
+
     /** Generate list of last N days' start-of-day millis (including today). */
     fun lastNDays(n: Int, endDate: LocalDate = LocalDate.now()): List<Long> {
         return (0 until n).map { daysAgo ->

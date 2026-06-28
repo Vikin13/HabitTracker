@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">HabitTracker</string>
+    <string name="widget_weekly_grid_desc">Weekly habit completion grid</string>
+    <string name="widget_quick_checkin_desc">Quick check-in for today\'s habits</string>
 </resources>
