@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/row_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingHorizontal="8dp"
+    android:paddingVertical="3dp">
+
+    <!-- Emoji -->
+    <TextView
+        android:id="@+id/row_emoji"
+        android:layout_width="26dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="18sp" />
+
+    <!-- 7 day dots — weight=1 each, align with header columns -->
+    <ImageView
+        android:id="@+id/row_dot_0"
+        android:layout_width="0dp"
+        android:layout_height="10dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:scaleType="center" />
+    <ImageView
+        android:id="@+id/row_dot_1"
+        android:layout_width="0dp"
+        android:layout_height="10dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:scaleType="center" />
+    <ImageView
+        android:id="@+id/row_dot_2"
+        android:layout_width="0dp"
+        android:layout_height="10dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:scaleType="center" />
+    <ImageView
+        android:id="@+id/row_dot_3"
+        android:layout_width="0dp"
+        android:layout_height="10dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:scaleType="center" />
+    <ImageView
+        android:id="@+id/row_dot_4"
+        android:layout_width="0dp"
+        android:layout_height="10dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:scaleType="center" />
+    <ImageView
+        android:id="@+id/row_dot_5"
+        android:layout_width="0dp"
+        android:layout_height="10dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:scaleType="center" />
+    <ImageView
+        android:id="@+id/row_dot_6"
+        android:layout_width="0dp"
+        android:layout_height="10dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:scaleType="center" />
+
+</LinearLayout>
