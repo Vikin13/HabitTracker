@@ -33,14 +33,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.Composable
@@ -61,6 +58,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
@@ -73,7 +71,6 @@ import com.habittracker.app.ui.scrimAlpha
 import com.habittracker.app.data.local.entity.isCurrentlyPaused
 import androidx.compose.foundation.Image as ComposeImage
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatsScreen(
     viewModel: StatsViewModel,
@@ -160,12 +157,14 @@ fun StatsScreen(
         }
 
         Column(modifier = Modifier.fillMaxSize()) {
-            TopAppBar(
-                title = { Text("Tasks") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    scrolledContainerColor = Color.Transparent
-                )
+            // Section title
+            Text(
+                text = "Tasks",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp, bottom = 2.dp),
+                textAlign = TextAlign.Center
             )
 
             if (uiState.stats.isEmpty() && !uiState.isLoading) {

@@ -98,13 +98,14 @@ fun CalendarScreen(viewModel: CalendarViewModel) {
         }
 
         Column(modifier = Modifier.fillMaxSize()) {
-            // Compact title bar
+            // Section title
             Text(
                 text = "History",
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp, top = 8.dp, bottom = 2.dp)
+                    .padding(top = 8.dp, bottom = 2.dp),
+                textAlign = TextAlign.Center
             )
 
             // Calendar section with swipe gesture for month switching
