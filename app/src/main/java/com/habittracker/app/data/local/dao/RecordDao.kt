@@ -60,4 +60,7 @@ interface RecordDao {
 
     @Delete
     suspend fun delete(record: RecordEntity)
+
+    @Query("DELETE FROM records")
+    suspend fun deleteAll()
 }

@@ -93,6 +93,7 @@ fun HomeScreen(
         if (showSettings) editTitleText = uiState.titleText
     }
     var pendingImageUri by remember { mutableStateOf<Uri?>(null) }
+    var showClearConfirm by remember { mutableStateOf(false) }
 
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -109,6 +110,27 @@ fun HomeScreen(
                 pendingImageUri = null
             },
             onCancel = { pendingImageUri = null }
+        )
+    }
+
+    // ── Clear data confirmation ──
+    if (showClearConfirm) {
+        AlertDialog(
+            onDismissRequest = { showClearConfirm = false },
+            title = { Text("Clear all data?") },
+            text = { Text("This will permanently delete all habits and records. This cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.clearAll()
+                    showClearConfirm = false
+                    showSettings = false
+                }) {
+                    Text("Delete all", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearConfirm = false }) { Text("Cancel") }
+            }
         )
     }
 
@@ -232,6 +254,18 @@ fun HomeScreen(
                                 )
                             }
                         }
+                    }
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                    TextButton(
+                        onClick = { showClearConfirm = true },
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    ) {
+                        Text(
+                            "Clear all data",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                     }
                 }
             },

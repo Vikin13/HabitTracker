@@ -100,4 +100,10 @@ class HabitRepository @Inject constructor(
         recordDao.getAllRecordsForHabit(habitId)
 
     val anyRecordChange: Flow<Int> = recordDao.anyRecordCount()
+
+    /** Delete all habits and records. */
+    suspend fun clearAll() {
+        recordDao.deleteAll()
+        habitDao.deleteAll()
+    }
 }

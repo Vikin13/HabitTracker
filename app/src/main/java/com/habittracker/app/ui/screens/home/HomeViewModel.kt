@@ -128,6 +128,13 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun clearAll() {
+        viewModelScope.launch {
+            repository.clearAll()
+            _weeklyRefreshTrigger.value = System.currentTimeMillis()
+        }
+    }
+
     companion object {
         fun getCurrentWeekDates(): List<LocalDate> {
             val today = LocalDate.now()

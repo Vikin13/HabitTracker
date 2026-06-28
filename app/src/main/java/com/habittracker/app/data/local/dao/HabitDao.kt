@@ -44,4 +44,7 @@ interface HabitDao {
 
     @Query("UPDATE habits SET resumedAt = :resumedAt WHERE id = :habitId")
     suspend fun resumeHabit(habitId: Long, resumedAt: Long = System.currentTimeMillis())
+
+    @Query("DELETE FROM habits")
+    suspend fun deleteAll()
 }
