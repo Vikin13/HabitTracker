@@ -10,10 +10,8 @@ import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -77,7 +75,7 @@ import com.habittracker.app.ui.rememberUriPainter
 import com.habittracker.app.ui.scrimAlpha
 import androidx.compose.foundation.Image as ComposeImage
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
@@ -154,41 +152,44 @@ fun HomeScreen(
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        backgroundPresets.forEachIndexed { index, (colorInt, name) ->
-                            val color = Color(colorInt)
-                            val isSelected = bg.type == BackgroundType.COLOR && bg.colorIndex == index
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier
-                                    .clickable { BackgroundManager.setColorIndex(index) }
-                                    .padding(4.dp)
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        backgroundPresets.withIndex().toList().chunked(4).forEach { rowPresets ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceEvenly
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(
-                                            if (index == 0) MaterialTheme.colorScheme.surface
-                                            else color,
-                                            RoundedCornerShape(8.dp)
+                                rowPresets.forEach { (index, preset) ->
+                                    val (colorInt, name) = preset
+                                    val color = Color(colorInt)
+                                    val isSelected = bg.type == BackgroundType.COLOR && bg.colorIndex == index
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        modifier = Modifier.clickable { BackgroundManager.setColorIndex(index) }
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(40.dp)
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(
+                                                    if (index == 0) MaterialTheme.colorScheme.surface
+                                                    else color,
+                                                    RoundedCornerShape(8.dp)
+                                                )
+                                                .then(
+                                                    if (isSelected) Modifier.border(
+                                                        2.dp, MaterialTheme.colorScheme.primary,
+                                                        RoundedCornerShape(8.dp)
+                                                    ) else Modifier
+                                                )
                                         )
-                                        .then(
-                                            if (isSelected) Modifier.border(
-                                                2.dp, MaterialTheme.colorScheme.primary,
-                                                RoundedCornerShape(8.dp)
-                                            ) else Modifier
+                                        Text(
+                                            text = name,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = if (isSelected) MaterialTheme.colorScheme.primary
+                                                    else MaterialTheme.colorScheme.onSurfaceVariant
                                         )
-                                )
-                                Text(
-                                    text = name,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = if (isSelected) MaterialTheme.colorScheme.primary
-                                            else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                    }
+                                }
                             }
                         }
                     }
