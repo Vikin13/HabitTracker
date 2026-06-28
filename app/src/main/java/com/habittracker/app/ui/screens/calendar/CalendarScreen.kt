@@ -100,7 +100,7 @@ fun CalendarScreen(viewModel: CalendarViewModel) {
         Column(modifier = Modifier.fillMaxSize()) {
             // Compact title bar
             Text(
-                text = "Calendar",
+                text = "History",
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier
                     .fillMaxWidth()
