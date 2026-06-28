@@ -36,7 +36,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -172,19 +171,21 @@ fun HomeScreen(
                         }
                     }
 
-                    if (bg.type == BackgroundType.IMAGE) {
-                        Text(
-                            text = "Photo set",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    OutlinedButton(onClick = { imagePicker.launch("image/*") }) {
-                        Text(if (bg.type == BackgroundType.IMAGE) "Change photo" else "Pick a photo")
-                    }
-                    if (bg.type != BackgroundType.SYSTEM) {
-                        TextButton(onClick = { BackgroundManager.resetToSystem() }) {
-                            Text("Reset to system default")
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        OutlinedButton(
+                            onClick = { imagePicker.launch("image/*") },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(if (bg.type == BackgroundType.IMAGE) "Change photo" else "Pick a photo")
+                        }
+                        if (bg.type != BackgroundType.SYSTEM) {
+                            TextButton(onClick = { BackgroundManager.resetToSystem() }) {
+                                Text("Reset", maxLines = 1)
+                            }
                         }
                     }
 
@@ -205,12 +206,31 @@ fun HomeScreen(
                             SchemeMode.DARK to "Dark"
                         ).forEach { (mode, label) ->
                             val isActive = bg.schemeMode == mode
-                            FilterChip(
-                                selected = isActive,
-                                onClick = { BackgroundManager.setSchemeMode(mode) },
-                                label = { Text(label) },
-                                modifier = Modifier.weight(1f)
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .background(
+                                        if (isActive) MaterialTheme.colorScheme.secondaryContainer
+                                        else Color.Transparent
+                                    )
+                                    .border(
+                                        1.dp,
+                                        if (isActive) MaterialTheme.colorScheme.secondary
+                                        else MaterialTheme.colorScheme.outline,
+                                        RoundedCornerShape(20.dp)
+                                    )
+                                    .clickable { BackgroundManager.setSchemeMode(mode) },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = label,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = if (isActive) MaterialTheme.colorScheme.onSecondaryContainer
+                                            else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }
