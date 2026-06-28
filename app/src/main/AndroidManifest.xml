@@ -15,6 +15,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.HabitTracker">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -47,6 +48,21 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/quick_checkin_widget_info" />
         </receiver>
+
+        <!-- RemoteViewsServices for widget list rows -->
+        <service
+            android:name=".ui.widget.WidgetHabitRowService"
+            android:permission="android.permission.BIND_REMOTEVIEWS"
+            android:exported="true" />
+        <service
+            android:name=".ui.widget.QuickCheckinRowService"
+            android:permission="android.permission.BIND_REMOTEVIEWS"
+            android:exported="true" />
+
+        <!-- Reminder alarm receiver -->
+        <receiver
+            android:name=".reminder.ReminderReceiver"
+            android:exported="false" />
 
         <!-- ContentProvider for widget write-back -->
         <provider

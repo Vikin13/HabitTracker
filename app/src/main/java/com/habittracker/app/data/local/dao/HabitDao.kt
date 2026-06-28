@@ -16,6 +16,10 @@ interface HabitDao {
     @Query("SELECT * FROM habits WHERE isActive = 1 ORDER BY (pausedAt IS NOT NULL AND resumedAt IS NULL) ASC, sortOrder ASC, name ASC")
     fun getAllActiveHabits(): Flow<List<HabitEntity>>
 
+    /** Same as [getAllActiveHabits] but one-shot (no Flow), for widget use. */
+    @Query("SELECT * FROM habits WHERE isActive = 1 ORDER BY (pausedAt IS NOT NULL AND resumedAt IS NULL) ASC, sortOrder ASC, name ASC")
+    suspend fun getAllActiveHabitsOnce(): List<HabitEntity>
+
     /** All non-deleted habits, active first then paused. */
     @Query("SELECT * FROM habits WHERE isActive = 1 ORDER BY (pausedAt IS NOT NULL AND resumedAt IS NULL) ASC, sortOrder ASC, name ASC")
     fun getAllVisibleHabits(): Flow<List<HabitEntity>>
@@ -26,6 +30,9 @@ interface HabitDao {
 
     @Query("SELECT * FROM habits WHERE id = :habitId")
     fun getHabitById(habitId: Long): Flow<HabitEntity?>
+
+    @Query("SELECT * FROM habits WHERE id = :habitId")
+    suspend fun getHabitByIdOnce(habitId: Long): HabitEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(habit: HabitEntity): Long

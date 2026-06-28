@@ -1,7 +1,7 @@
 package com.habittracker.app.di
 
 import android.content.Context
-import androidx.room.Room
+import com.habittracker.app.data.local.DatabaseProvider
 import com.habittracker.app.data.local.HabitDatabase
 import com.habittracker.app.data.local.dao.HabitDao
 import com.habittracker.app.data.local.dao.RecordDao
@@ -18,16 +18,8 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideHabitDatabase(@ApplicationContext context: Context): HabitDatabase {
-        return Room.databaseBuilder(
-            context,
-            HabitDatabase::class.java,
-            "habit_tracker.db"
-        )
-            .addMigrations(HabitDatabase.MIGRATION_3_4, HabitDatabase.MIGRATION_4_5, HabitDatabase.MIGRATION_5_6, HabitDatabase.MIGRATION_6_7)
-            .fallbackToDestructiveMigration()
-            .build()
-    }
+    fun provideHabitDatabase(@ApplicationContext context: Context): HabitDatabase =
+        DatabaseProvider.provide(context)
 
     @Provides
     fun provideHabitDao(database: HabitDatabase): HabitDao = database.habitDao()

@@ -1,8 +1,8 @@
 package com.habittracker.app.data.repository
 
 import android.content.Context
-import androidx.room.Room
-import com.habittracker.app.data.local.HabitDatabase
+import com.habittracker.app.data.local.DatabaseProvider
+import com.habittracker.app.data.local.entity.HabitEntity
 import com.habittracker.app.data.local.entity.RecordEntity
 import com.habittracker.app.data.local.entity.isActiveOn
 import com.habittracker.app.util.DateUtils
@@ -10,7 +10,6 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
-import kotlinx.coroutines.flow.first
 
 /**
  * Lightweight data access for AppWidgets.
@@ -18,11 +17,7 @@ import kotlinx.coroutines.flow.first
  */
 class WidgetRepository(context: Context) {
 
-    private val db = Room.databaseBuilder(
-        context.applicationContext,
-        HabitDatabase::class.java,
-        "habit_tracker_database"
-    ).build()
+    private val db = DatabaseProvider.provide(context)
 
     private val habitDao = db.habitDao()
     private val recordDao = db.recordDao()
@@ -47,12 +42,26 @@ class WidgetRepository(context: Context) {
         val isToday: Boolean
     )
 
+    /** One row in the weekly grid: a habit + its 7-day completion. */
+    data class HabitWeekRow(
+        val habitId: Long,
+        val emoji: String,
+        val name: String,
+        /** Mon-Sun, true if completed on that day. */
+        val days: List<Boolean>,
+        val isPaused: Boolean
+    )
+
+    /** Look up a single habit by ID (one-shot, for reminder scheduling). */
+    suspend fun getHabitById(habitId: Long): HabitEntity? =
+        db.habitDao().getHabitByIdOnce(habitId)
+
     // ── Queries ────────────────────────────────────────────────────
 
     /** Get today's active habits with their current completion status. */
     suspend fun getTodayHabits(): List<WidgetHabit> {
         val today = DateUtils.todayMillis()
-        val allHabits = habitDao.getAllActiveHabits().first()
+        val allHabits = habitDao.getAllActiveHabitsOnce()
         val todayDate = LocalDate.now()
         val activeHabits = allHabits.filter { it.isActiveOn(todayDate) }
 
@@ -60,8 +69,8 @@ class WidgetRepository(context: Context) {
         val weekEnd = DateUtils.startOfDay(DateUtils.currentWeekEnd())
 
         return activeHabits.map { habit ->
-            val todayRecords = recordDao.getRecordsInRange(habit.id, today, today).first()
-            val weekRecords = recordDao.getRecordsInRange(habit.id, weekStart, weekEnd).first()
+            val todayRecords = recordDao.getRecordsInRangeOnce(habit.id, today, today)
+            val weekRecords = recordDao.getRecordsInRangeOnce(habit.id, weekStart, weekEnd)
             WidgetHabit(
                 id = habit.id,
                 name = habit.name,
@@ -70,6 +79,29 @@ class WidgetRepository(context: Context) {
                 weeklyTarget = habit.weeklyTarget.coerceAtLeast(1),
                 currentWeekCount = weekRecords.size,
                 sortOrder = habit.sortOrder,
+                isPaused = habit.pausedAt != null && habit.resumedAt == null
+            )
+        }
+    }
+
+    /** Get each active habit with its per-day completion for the current week. */
+    suspend fun getWeeklyHabitRows(): List<HabitWeekRow> {
+        val allHabits = habitDao.getAllActiveHabitsOnce()
+        val todayDate = LocalDate.now()
+        val activeHabits = allHabits.filter { it.isActiveOn(todayDate) }
+
+        val monday = todayDate.with(DayOfWeek.MONDAY)
+        val days = (0..6).map { monday.plusDays(it.toLong()) }
+        val dayMillis = days.map { DateUtils.startOfDay(it) }
+
+        return activeHabits.map { habit ->
+            val weekRecords = recordDao.getRecordsInRangeOnce(habit.id, dayMillis.first(), dayMillis.last())
+            val completedDates = weekRecords.map { it.date }.toSet()
+            HabitWeekRow(
+                habitId = habit.id,
+                emoji = habit.emoji,
+                name = habit.name,
+                days = dayMillis.map { it in completedDates },
                 isPaused = habit.pausedAt != null && habit.resumedAt == null
             )
         }

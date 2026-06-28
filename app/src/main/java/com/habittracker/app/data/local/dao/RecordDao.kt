@@ -19,9 +19,13 @@ interface RecordDao {
     @Query("SELECT * FROM records WHERE habitId = :habitId AND date = :dateMillis LIMIT 1")
     suspend fun getRecord(habitId: Long, dateMillis: Long): RecordEntity?
 
-    /** Get all records for a habit within a date range. */
+    /** Get all records for a habit within a date range (reactive). */
     @Query("SELECT * FROM records WHERE habitId = :habitId AND date >= :startDate AND date <= :endDate ORDER BY date ASC")
     fun getRecordsInRange(habitId: Long, startDate: Long, endDate: Long): Flow<List<RecordEntity>>
+
+    /** One-shot version for widget use (no Flow, always hits DB). */
+    @Query("SELECT * FROM records WHERE habitId = :habitId AND date >= :startDate AND date <= :endDate ORDER BY date ASC")
+    suspend fun getRecordsInRangeOnce(habitId: Long, startDate: Long, endDate: Long): List<RecordEntity>
 
     /** Get all records for a date (all habits). */
     @Query("SELECT * FROM records WHERE date = :dateMillis")
