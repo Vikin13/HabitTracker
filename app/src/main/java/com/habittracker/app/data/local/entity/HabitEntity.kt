@@ -14,5 +14,6 @@ data class HabitEntity(
     val weeklyTarget: Int = 7,          // target completions per week (default = daily)
     val sortOrder: Int = 0,
     val isActive: Boolean = true,
+    val isArchived: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
 )

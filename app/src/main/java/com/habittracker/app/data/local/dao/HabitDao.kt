@@ -12,8 +12,11 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface HabitDao {
 
-    @Query("SELECT * FROM habits WHERE isActive = 1 ORDER BY sortOrder ASC, name ASC")
+    @Query("SELECT * FROM habits WHERE isActive = 1 AND isArchived = 0 ORDER BY sortOrder ASC, name ASC")
     fun getAllActiveHabits(): Flow<List<HabitEntity>>
+
+    @Query("SELECT * FROM habits WHERE isArchived = 1 ORDER BY sortOrder ASC, name ASC")
+    fun getArchivedHabits(): Flow<List<HabitEntity>>
 
     @Query("SELECT * FROM habits ORDER BY sortOrder ASC, name ASC")
     fun getAllHabits(): Flow<List<HabitEntity>>
@@ -32,4 +35,10 @@ interface HabitDao {
 
     @Query("UPDATE habits SET sortOrder = :order WHERE id = :habitId")
     suspend fun updateSortOrder(habitId: Long, order: Int)
+
+    @Query("UPDATE habits SET isArchived = 1 WHERE id = :habitId")
+    suspend fun archiveHabit(habitId: Long)
+
+    @Query("UPDATE habits SET isArchived = 0 WHERE id = :habitId")
+    suspend fun unarchiveHabit(habitId: Long)
 }

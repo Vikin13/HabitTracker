@@ -17,7 +17,7 @@
 - 预览支持手势缩放（0.3f–3.0f）和平移拖拽
 
 ### Calendar 日历
-- 月历视图，每日打卡标记（△ 正常打卡 / ★ 补签）
+- 月历视图，每日打卡标记（★正常 / △补签）
 - 透明 TopAppBar，背景穿透显示
 
 ### Statistics 统计
@@ -43,6 +43,17 @@
 - Unified BackgroundManager 单例管理背景状态（图片/颜色）
 - 支持图片缩放（scale）和偏移（offsetX/offsetY）
 - 3 页（Home/Calendar/Stats）统一穿透
+
+### 体验优化
+- **背景亮度自适应** — 添加暗色背景检测 + scrim 遮罩（0.18f~0.30f），确保所有文字在深色背景上可读
+- **Calendar 手势滑动** — 日历区域支持左右滑动切换月份（阈值 120px）
+- **Calendar 布局上移** — 替换 TopAppBar 为紧凑标题，减少垂直空间占用
+- **编辑页布局优化** — Reminder/End date/Weekly goal 标签与值并排显示，节省空间
+- **Save/Delete 同行** — Save 按钮和 Delete 按钮同一行左右分布
+- **统计 Rate 修复** — 计算时考虑 endDate，只统计习惯实际活跃天数
+- **统计弹窗丰富** — 新增 Missed Days、Best Streak、Weekly Trend（近5周周完成数）
+- **Habit 归档功能** — 新增 isArchived 字段 + Room 迁移（v3→v4），编辑页可 Archive/Restore
+- **Home 归档筛选** — 设置弹窗新增 Show archived 开关，可切换查看已归档习惯
 
 ### 修复记录
 - 修复 SwipeToDismissBox 交互限制 → 改用自定义 Animatable 实现

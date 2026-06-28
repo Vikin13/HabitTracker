@@ -73,8 +73,33 @@ val backgroundPresets = listOf(
     0xFFE3F2FD to "Sky",
     0xFFE8F5E9 to "Mint",
     0xFFF3E5F5 to "Lavender",
-    0xFFFFFDE7 to "Lemon"
+    0xFFFFFDE7 to "Lemon",
+    // Dark presets
+    0xFF1C1B1F to "Dark",
+    0xFF2D2D2D to "Charcoal",
+    0xFF1A237E to "Navy",
+    0xFF1B5E20 to "Forest"
 )
+
+/**
+ * Returns the scrim opacity needed when this background is applied.
+ * A dark background needs a dark overlay so MaterialTheme colors remain readable.
+ */
+fun BackgroundSettings.scrimAlpha(): Float {
+    return when (type) {
+        BackgroundType.IMAGE -> 0.18f
+        BackgroundType.COLOR -> {
+            val colorInt = backgroundPresets.getOrElse(colorIndex) { 0xFFFFFFFF to "Default" }.first
+            val r = android.graphics.Color.red(colorInt) / 255f
+            val g = android.graphics.Color.green(colorInt) / 255f
+            val b = android.graphics.Color.blue(colorInt) / 255f
+            // sRGB relative luminance (simplified)
+            val luminance = 0.2126f * r + 0.7152f * g + 0.0722f * b
+            if (luminance < 0.5f) 0.30f else 0f
+        }
+        BackgroundType.SYSTEM -> 0f
+    }
+}
 
 @Composable
 fun BackgroundSettings.currentBackgroundColor(): Color {

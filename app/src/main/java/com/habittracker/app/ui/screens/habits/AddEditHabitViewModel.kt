@@ -21,7 +21,8 @@ data class AddEditHabitUiState(
     val endDateError: String? = null,
     val weeklyTarget: Int = 0,
     val isSaving: Boolean = false,
-    val isEditMode: Boolean = false
+    val isEditMode: Boolean = false,
+    val isArchived: Boolean = false
 )
 
 val EmojiOptions = listOf(
@@ -61,7 +62,8 @@ class AddEditHabitViewModel @Inject constructor(
                     reminderMinute = minute,
                     endDateMillis = habit.endDate,
                     weeklyTarget = habit.weeklyTarget,
-                    isEditMode = true
+                    isEditMode = true,
+                    isArchived = habit.isArchived
                 )
             }
         }
@@ -105,6 +107,26 @@ class AddEditHabitViewModel @Inject constructor(
                 repository.deleteHabit(habit)
             }
             onDeleted()
+        }
+    }
+
+    fun archiveHabit(onDone: () -> Unit) {
+        val id = editingHabitId ?: return
+        viewModelScope.launch {
+            repository.getHabitById(id).first()?.let { habit ->
+                repository.updateHabit(habit.copy(isArchived = true))
+            }
+            onDone()
+        }
+    }
+
+    fun unarchiveHabit(onDone: () -> Unit) {
+        val id = editingHabitId ?: return
+        viewModelScope.launch {
+            repository.getHabitById(id).first()?.let { habit ->
+                repository.updateHabit(habit.copy(isArchived = false))
+            }
+            onDone()
         }
     }
 

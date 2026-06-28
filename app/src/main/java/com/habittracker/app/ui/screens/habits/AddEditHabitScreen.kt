@@ -215,13 +215,17 @@ fun AddEditHabitScreen(
                 }
             }
 
-            // Reminder — always visible
-            Text(
-                text = "Reminder",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            // Reminder — label + value side by side
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Reminder",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                )
                 val reminderDisplay = if (uiState.reminderHour != null && uiState.reminderMinute != null) {
                     String.format("%02d:%02d", uiState.reminderHour, uiState.reminderMinute)
                 } else {
@@ -236,13 +240,17 @@ fun AddEditHabitScreen(
                 )
             }
 
-            // End date — always visible
-            Text(
-                text = "End date",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            // End date — label + value side by side
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "End date",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                )
                 val dateDisplay = if (uiState.endDateMillis != null) {
                     SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
                         .format(Date(uiState.endDateMillis!!))
@@ -265,19 +273,25 @@ fun AddEditHabitScreen(
                 )
             }
 
-            // Weekly target — number picker
-            Text(
-                text = "Weekly goal (times)",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-            )
-            Text(
-                text = if (uiState.weeklyTarget > 0) "${uiState.weeklyTarget} times / week" else "Not set",
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.clickable { showTargetPicker = true },
-                color = if (uiState.weeklyTarget > 0) MaterialTheme.colorScheme.onSurface
-                        else MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            // Weekly target — label + value side by side
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Weekly goal (times)",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                )
+                Text(
+                    text = if (uiState.weeklyTarget > 0) "${uiState.weeklyTarget} times / week" else "Not set",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.clickable { showTargetPicker = true },
+                    color = if (uiState.weeklyTarget > 0) MaterialTheme.colorScheme.onSurface
+                            else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
             // Number picker dialog
             if (showTargetPicker) {
@@ -291,28 +305,46 @@ fun AddEditHabitScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Button(
-                onClick = { viewModel.save(onSaved) },
+            // Save + Delete on the same row
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                enabled = uiState.name.isNotBlank() && !uiState.isSaving
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
-                    if (uiState.isSaving) "Saving..." else "Save habit",
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-            }
-
-            // Delete — only in edit mode
-            if (uiState.isEditMode) {
-                TextButton(
-                    onClick = { showDeleteDialog = true },
-                    modifier = Modifier.fillMaxWidth()
+                Button(
+                    onClick = { viewModel.save(onSaved) },
+                    modifier = Modifier.weight(1f),
+                    enabled = uiState.name.isNotBlank() && !uiState.isSaving
                 ) {
                     Text(
-                        "Delete habit",
-                        color = MaterialTheme.colorScheme.error,
+                        if (uiState.isSaving) "Saving..." else "Save",
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
+                }
+
+                // Archive / Unarchive — only in edit mode
+                if (uiState.isEditMode) {
+                    TextButton(
+                        onClick = {
+                            if (uiState.isArchived) viewModel.unarchiveHabit(onSaved)
+                            else viewModel.archiveHabit(onSaved)
+                        }
+                    ) {
+                        Text(
+                            if (uiState.isArchived) "Restore" else "Archive",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                // Delete — only in edit mode
+                if (uiState.isEditMode) {
+                    TextButton(onClick = { showDeleteDialog = true }) {
+                        Text(
+                            "Delete",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
 

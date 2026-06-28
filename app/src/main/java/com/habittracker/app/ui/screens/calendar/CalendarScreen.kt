@@ -2,6 +2,7 @@ package com.habittracker.app.ui.screens.calendar
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,17 +26,16 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +44,7 @@ import androidx.compose.ui.draw.scale
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -54,9 +55,9 @@ import com.habittracker.app.ui.BackgroundManager
 import com.habittracker.app.ui.BackgroundType
 import com.habittracker.app.ui.backgroundPresets
 import com.habittracker.app.ui.rememberUriPainter
+import com.habittracker.app.ui.scrimAlpha
 import androidx.compose.foundation.Image as ComposeImage
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(viewModel: CalendarViewModel) {
     val uiState by viewModel.uiState.collectAsState()
@@ -89,70 +90,102 @@ fun CalendarScreen(viewModel: CalendarViewModel) {
             )
         }
 
+        // Scrim overlay for dark backgrounds
+        val scrimAlpha = bg.scrimAlpha()
+        if (scrimAlpha > 0f) {
+            Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = scrimAlpha)))
+        }
+
         Column(modifier = Modifier.fillMaxSize()) {
-            TopAppBar(
-                title = { Text("Calendar") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    scrolledContainerColor = Color.Transparent
-                )
-            )
-
-        // Month navigation
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = { viewModel.previousMonth() }) {
-                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Previous")
-            }
+            // Compact title bar
             Text(
-                text = "${uiState.currentMonth.month.getDisplayName(TextStyle.FULL, Locale.getDefault())} ${uiState.currentMonth.year}",
-                style = MaterialTheme.typography.titleLarge
+                text = "Calendar",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, top = 12.dp, bottom = 4.dp)
             )
-            IconButton(onClick = { viewModel.nextMonth() }) {
-                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Next")
-            }
-        }
 
-        // Day-of-week headers
-        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
-            listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun").forEach { day ->
-                Text(
-                    text = day,
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+            // Calendar section with swipe gesture for month switching
+            var dragTotal by remember { mutableFloatStateOf(0f) }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f, fill = false)
+                    .pointerInput(Unit) {
+                        detectHorizontalDragGestures(
+                            onDragStart = { dragTotal = 0f },
+                            onHorizontalDrag = { _, dragAmount ->
+                                dragTotal += dragAmount
+                            },
+                            onDragEnd = {
+                                if (dragTotal < -120f) viewModel.nextMonth()
+                                else if (dragTotal > 120f) viewModel.previousMonth()
+                            },
+                            onDragCancel = { }
+                        )
+                    }
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    // Month navigation (compact)
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = { viewModel.previousMonth() }) {
+                            Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                                contentDescription = "Previous")
+                        }
+                        Text(
+                            text = "${uiState.currentMonth.month.getDisplayName(TextStyle.FULL, Locale.getDefault())} ${uiState.currentMonth.year}",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        IconButton(onClick = { viewModel.nextMonth() }) {
+                            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = "Next")
+                        }
+                    }
+
+                    // Day-of-week headers
+                    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
+                        listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun").forEach { day ->
+                            Text(
+                                text = day,
+                                modifier = Modifier.weight(1f),
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    // Calendar grid
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(7),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                        userScrollEnabled = false
+                    ) {
+                        items(uiState.days) { day ->
+                            CalendarDayCell(
+                                day = day,
+                                isSelected = day.date == uiState.selectedDate,
+                                onClick = { viewModel.onDayClicked(day.date) }
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Selected day detail
+            if (uiState.selectedDate != null) {
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp))
+                SelectedDayDetail(
+                    date = uiState.selectedDate!!,
+                    completions = uiState.selectedDayCompletions,
+                    onToggle = { viewModel.toggleDayHabit(it) }
                 )
             }
-        }
-
-        // Calendar grid (fixed height, not scrollable)
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(7),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
-            userScrollEnabled = false
-        ) {
-            items(uiState.days) { day ->
-                CalendarDayCell(
-                    day = day,
-                    isSelected = day.date == uiState.selectedDate,
-                    onClick = { viewModel.onDayClicked(day.date) }
-                )
-            }
-        }
-
-        // Selected day detail
-        if (uiState.selectedDate != null) {
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-            SelectedDayDetail(
-                date = uiState.selectedDate!!,
-                completions = uiState.selectedDayCompletions,
-                onToggle = { viewModel.toggleDayHabit(it) }
-            )
-        }
         } // Column
     } // Box
 }

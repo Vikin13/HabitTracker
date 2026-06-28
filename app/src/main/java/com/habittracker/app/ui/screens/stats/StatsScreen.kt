@@ -66,6 +66,7 @@ import com.habittracker.app.ui.BackgroundManager
 import com.habittracker.app.ui.BackgroundType
 import com.habittracker.app.ui.backgroundPresets
 import com.habittracker.app.ui.rememberUriPainter
+import com.habittracker.app.ui.scrimAlpha
 import androidx.compose.foundation.Image as ComposeImage
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -96,8 +97,16 @@ fun StatsScreen(
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                     DetailRow("Duration", "${detail.totalDays} days")
                     DetailRow("Completed", "${detail.completedDays} days")
-                    DetailRow("Streak", "${detail.currentStreak} days")
+                    DetailRow("Missed", "${detail.missedDays} days")
+                    DetailRow("Streak", "${detail.currentStreak} days (best ${detail.bestStreak})")
                     DetailRow("Rate", "${(detail.completionRate * 100).toInt()}%")
+                    if (detail.weeklyTrend.isNotEmpty()) {
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                        Text("Weekly completions:", style = MaterialTheme.typography.labelLarge)
+                        detail.weeklyTrend.forEach { (week, count) ->
+                            DetailRow(week, "$count / 7")
+                        }
+                    }
                     if (detail.completionDates.isNotEmpty()) {
                         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                         Text("Recent completions:", style = MaterialTheme.typography.labelLarge)
@@ -139,6 +148,12 @@ fun StatsScreen(
                     .fillMaxSize()
                     .background(Color(backgroundPresets[bg.colorIndex].first))
             )
+        }
+
+        // Scrim overlay for dark backgrounds
+        val scrimAlpha = bg.scrimAlpha()
+        if (scrimAlpha > 0f) {
+            Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = scrimAlpha)))
         }
 
         Column(modifier = Modifier.fillMaxSize()) {
@@ -311,7 +326,7 @@ private fun HabitStatCard(
                 Text(stat.habit.name, style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold)
                 Text(
-                    "${stat.totalDays}d total · ${stat.completedDays}d done · 🔥${stat.currentStreak}d streak",
+                    "${stat.totalDays}d · ${stat.completedDays}d done · 🔥${stat.currentStreak}d (best ${stat.bestStreak})",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
