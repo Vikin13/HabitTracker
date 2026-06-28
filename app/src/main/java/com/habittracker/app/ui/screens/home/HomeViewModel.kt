@@ -3,6 +3,7 @@ package com.habittracker.app.ui.screens.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.habittracker.app.data.local.entity.HabitEntity
+import com.habittracker.app.data.local.entity.isActiveOn
 import com.habittracker.app.data.repository.HabitRepository
 import com.habittracker.app.util.DateUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -63,14 +64,16 @@ class HomeViewModel @Inject constructor(
                 repository.getTodayRecords(today),
                 _weeklyRefreshTrigger
             ) { habits, todayRecords, _ ->
+                val todayDate = LocalDate.now()
+                val activeHabits = habits.filter { it.isActiveOn(todayDate) }
                 val completedSet = todayRecords.map { it.habitId }.toSet()
                 val weeklyMap = mutableMapOf<Long, Set<Long>>()
-                habits.forEach { habit ->
+                activeHabits.forEach { habit ->
                     val habitRecords = repository.getRecordsInRange(habit.id, weekStart, weekEnd).first()
                     weeklyMap[habit.id] = habitRecords.map { it.date }.toSet()
                 }
                 _uiState.value = _uiState.value.copy(
-                    habits = habits,
+                    habits = activeHabits,
                     completedToday = completedSet,
                     weeklyCompletions = weeklyMap,
                     isLoading = false

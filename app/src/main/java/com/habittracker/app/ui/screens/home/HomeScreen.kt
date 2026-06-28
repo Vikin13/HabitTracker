@@ -65,6 +65,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import com.habittracker.app.data.local.entity.HabitEntity
+import com.habittracker.app.data.local.entity.isCurrentlyPaused
 import kotlin.math.roundToInt
 import com.habittracker.app.ui.BackgroundManager
 import com.habittracker.app.ui.BackgroundType
@@ -303,7 +304,7 @@ fun HomeScreen(
                     HabitItem(
                         habit = habit,
                         isCompleted = uiState.completedToday.contains(habit.id),
-                        isPaused = habit.isArchived,
+                        isPaused = habit.isCurrentlyPaused,
                         onToggle = { viewModel.toggleHabit(habit.id) },
                         onClick = { },
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
