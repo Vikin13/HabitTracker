@@ -1,5 +1,31 @@
 # 开发记录
 
+## [1.2.0] - 2026-06-28
+
+### UI 重构
+
+- **底部导航栏精简** — 移除文字标签，仅保留图标，高度自动压缩为紧凑模式
+- **页面重命名** — Calendar → **History**，Statistics → **Tasks**，标题居中统一 `headlineMedium`
+- **自定义颜色选择器** — 替换 `FilterChip` 为 `Box` + `.clickable` 自定义 chip，文字永远居中，无勾选图标偏移
+- **背景色网格对齐** — `FlowRow` → 固定 4 列的 `Row` + `SpaceEvenly`，移除 Lemon/Navy 两个预设色
+
+### 设置对话框优化
+
+- **紧凑布局** — "Reset to system default" 与 "Change photo" 并排显示，缩短为 "Reset"
+- **清除所有数据** — 新增 "Clear all data" 按钮（红色），二次确认后删除全部 habits + records
+- **颜色主题自适应** — Auto 模式根据背景图片/颜色亮度自动切换暗色/亮色主题
+
+### 数据库变更
+
+- **HabitDao/RecordDao** — 新增 `deleteAll()` 全表清空方法
+
+### 修复
+
+- 修复 `FilterChip` 选中时勾选图标占位导致文字不居中
+- 修复 `OutlinedButton` 在暗色主题下文字完全消失的问题
+- 修复 设置照片后 "Reset" 按钮额外占据一行压缩 color scheme 空间
+- 修复 `FlowRow` 因各色块文字宽度不同导致网格无法对齐
+
 ## [1.1.0] - 2026-06-28
 
 ### Stats 统计
