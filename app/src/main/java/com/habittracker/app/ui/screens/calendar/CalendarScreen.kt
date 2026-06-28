@@ -104,7 +104,7 @@ fun CalendarScreen(viewModel: CalendarViewModel) {
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp, top = 12.dp, bottom = 4.dp)
+                    .padding(start = 16.dp, top = 8.dp, bottom = 2.dp)
             )
 
             // Calendar section with swipe gesture for month switching
@@ -112,7 +112,7 @@ fun CalendarScreen(viewModel: CalendarViewModel) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f, fill = false)
+                    .height(340.dp)
                     .pointerInput(Unit) {
                         detectHorizontalDragGestures(
                             onDragStart = { dragTotal = 0f },
@@ -178,14 +178,16 @@ fun CalendarScreen(viewModel: CalendarViewModel) {
                 }
             }
 
-            // Selected day detail
+            // Selected day detail (takes remaining space, scrolls internally)
             if (uiState.selectedDate != null) {
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp))
-                SelectedDayDetail(
-                    date = uiState.selectedDate!!,
-                    completions = uiState.selectedDayCompletions,
-                    onToggle = { viewModel.toggleDayHabit(it) }
-                )
+                Box(modifier = Modifier.weight(1f)) {
+                    SelectedDayDetail(
+                        date = uiState.selectedDate!!,
+                        completions = uiState.selectedDayCompletions,
+                        onToggle = { viewModel.toggleDayHabit(it) }
+                    )
+                }
             }
         } // Column
     } // Box
@@ -197,26 +199,28 @@ private fun CalendarDayCell(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    // Only render past/today dates from current month — future and other months are spacers
     val isFuture = day.date > LocalDate.now()
+    if (!day.isCurrentMonth || isFuture) {
+        Box(modifier = Modifier.aspectRatio(1f).padding(1.dp))
+        return
+    }
     val bgColor = when {
-        isFuture -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
         isSelected -> MaterialTheme.colorScheme.primary
         day.isToday -> MaterialTheme.colorScheme.primary
         day.hasCompletion -> MaterialTheme.colorScheme.primaryContainer
         else -> MaterialTheme.colorScheme.surface
     }
     val textColor = when {
-        isFuture -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
         isSelected -> MaterialTheme.colorScheme.onPrimary
         day.isToday -> MaterialTheme.colorScheme.onPrimary
-        !day.isCurrentMonth -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
         else -> MaterialTheme.colorScheme.onSurface
     }
 
     Box(
         modifier = Modifier
             .aspectRatio(1f)
-            .padding(2.dp)
+            .padding(1.dp)
             .clip(CircleShape)
             .background(bgColor, CircleShape)
             .then(if (isFuture) Modifier else Modifier.clickable(onClick = onClick)),

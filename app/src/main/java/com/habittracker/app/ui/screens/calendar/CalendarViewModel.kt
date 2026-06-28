@@ -3,6 +3,7 @@ package com.habittracker.app.ui.screens.calendar
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.habittracker.app.data.local.entity.HabitEntity
+import com.habittracker.app.data.local.entity.isActiveOn
 import com.habittracker.app.data.repository.HabitRepository
 import com.habittracker.app.util.DateUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -77,7 +78,7 @@ class CalendarViewModel @Inject constructor(
                     days = days,
                     habits = habits,  // all habits, no global filter
                     isLoading = false,
-                    selectedDate = _uiState.value.selectedDate,
+                    selectedDate = _uiState.value.selectedDate ?: LocalDate.now(),
                     selectedDayCompletions = _uiState.value.selectedDayCompletions
                 )
             }.collect { state ->
@@ -85,10 +86,6 @@ class CalendarViewModel @Inject constructor(
                 state.selectedDate?.let { loadDayDetail(it) }
             }
         }
-    }
-
-    fun loadMonth(yearMonth: YearMonth) {
-        _currentMonth.value = yearMonth
     }
 
     fun onDayClicked(date: LocalDate) {
@@ -100,9 +97,11 @@ class CalendarViewModel @Inject constructor(
         viewModelScope.launch {
             val dateMillis = DateUtils.startOfDay(date)
 
-            // Only habits active on this date (endDate == null or endDate >= this date)
+            // Only habits active on this date (created before/on + not past endDate + not paused)
             val validHabits = _uiState.value.habits.filter { h ->
-                h.endDate == null || h.endDate >= dateMillis
+                DateUtils.toLocalDate(h.createdAt) <= date &&
+                (h.endDate == null || h.endDate >= dateMillis) &&
+                h.isActiveOn(date)
             }
 
             val records = repository.getRecordsByDate(dateMillis)
@@ -134,6 +133,10 @@ class CalendarViewModel @Inject constructor(
     fun toggleDayHabit(habitId: Long) {
         val date = _uiState.value.selectedDate ?: return
         if (date > LocalDate.now()) return // future dates cannot be toggled
+        val habit = _uiState.value.habits.find { it.id == habitId } ?: return
+        val createdDate = DateUtils.toLocalDate(habit.createdAt)
+        if (date < createdDate) return // cannot backfill before creation date
+        if (!habit.isActiveOn(date)) return // cannot toggle during a pause period
         viewModelScope.launch {
             val dateMillis = DateUtils.startOfDay(date)
             repository.toggleRecord(habitId, dateMillis)
@@ -147,7 +150,14 @@ class CalendarViewModel @Inject constructor(
     }
 
     fun nextMonth() {
-        loadMonth(_uiState.value.currentMonth.plusMonths(1))
+        val next = _uiState.value.currentMonth.plusMonths(1)
+        if (!next.isAfter(YearMonth.now())) {
+            loadMonth(next)
+        }
+    }
+
+    fun loadMonth(yearMonth: YearMonth) {
+        _currentMonth.value = if (yearMonth.isAfter(YearMonth.now())) YearMonth.now() else yearMonth
     }
 
     private fun generateCalendarDays(yearMonth: YearMonth): List<CalendarDay> {
