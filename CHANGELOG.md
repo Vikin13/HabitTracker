@@ -1,5 +1,30 @@
 # 开发记录
 
+## [1.1.0] - 2026-06-28
+
+### Stats 统计
+- **实时刷新** — 新增 RecordDao.anyRecordCount() Flow，StatsViewModel 用 combine 监听 habits + records 双表变化，日历补打卡后自动重算
+- **当前周完成率** — 每条 habit 卡片右侧显示本周完成率百分比，替代历史总完成率
+- **除零保护** — detail 弹窗的 weeklyTarget 和 expectedTotal 加 coerceAtLeast(1) 兜底
+- **存量修复** — MIGRATION_6_7 将旧数据 weeklyTarget=0 设为 7
+
+### Calendar 日历
+- **禁止未来月份** — nextMonth() 检查不越过当前月，loadMonth() 钳制
+- **禁止补打卡到创建日期前** — toggleDayHabit 检查 date < createdAt 时直接 return
+- **暂停期不可操作** — 日历也受 isActiveOn 控制
+- **视觉优化** — 未来/非当月日期渲染为透明占位，CircleShape 圆形选中，padding 缩至 1dp
+
+### Home 主页
+- **暂停习惯隐藏** — HomeViewModel 用 isActiveOn(todayDate) 过滤，暂停期间不展示、不可打卡
+
+### 习惯编辑页
+- **每周目标默认 7** — 不设置即视为每天完成
+- **范围 1-7** — 滚轴从 0..31 改为 1..7
+- **滚轴重构** — 移除不对齐的中心横条，用 derivedStateOf 计算视口中心选中项，非选中项缩小字号淡化
+
+### 数据库变更
+- **版本 6→7** — MIGRATION_6_7 更新 weeklyTarget=0→7
+
 ## [1.0.0] - 2026-06-28
 
 ### 项目初始化

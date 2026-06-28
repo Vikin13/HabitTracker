@@ -7,13 +7,20 @@
 - ✅ **编辑页布局优化** — Reminder/End date/Weekly goal 标签值并排；Save/Delete 同行
 - ✅ **统计 Rate 修复** — `calculateStat` 考虑 endDate，只统计活跃天数
 - ✅ **统计弹窗丰富** — 新增 Missed Days、Best Streak、Weekly Trend
-- ✅ **Habit 暂停** — `isArchived` 字段 + Room v3→v4 迁移，编辑页 Pause/Resume，暂停项排末尾
-- ✅ **暂停可视化** — 主页半透明 + (Paused) 标签 + 隐藏打卡圈；统计页 (Paused) 标注
-- ✅ **GitHub 推送** — 项目已推送至 https://github.com/Vikin13/HabitTracker
+- ✅ **Habit 暂停** — `isArchived` → `pausedAt`/`resumedAt`，编辑页 Pause/Resume，暂停项排末尾
+- ✅ **暂停可视化** — 主页/统计/日历统一用 isActiveOn 过滤，暂停期间不可见/不可打卡
+- ✅ **统计实时刷新** — RecordDao.anyRecordCount Flow + combine 监听 habits+records 双表变化
+- ✅ **当前周完成率** — habit 卡片右侧显示本周完成率百分比
+- ✅ **Calendar 禁止未来月份/补打卡保护** — 不能滑到未来月、不能补打卡到创建日期前、暂停期不可操作
+- ✅ **Calendar 视觉优化** — 未来/非当月透明占位、CircleShape、padding 1dp
+- ✅ **Home 暂停过滤** — isActiveOn(todayDate) 过滤，暂停习惯不在主页展示
+- ✅ **每周目标默认 7** — `weeklyTarget` 默认 7，范围 1-7，0→7 迁移 MIGRATION_6_7
+- ✅ **滚轴重构** — 用 `derivedStateOf` 计算视口中心选中项，移除不对齐横条
+- ✅ **数据库版本 6→7** — MIGRATION_6_7 修复存量 weeklyTarget=0
 
 ## Remaining
 
-### P1 — 功能完善
+### P2 — 功能增强
 
 ### 1. 自定义排序功能
 - 当前 `sortOrder` 字段存在，但无 UI 调整排序
