@@ -35,6 +35,10 @@ interface RecordDao {
     @Query("SELECT * FROM records WHERE habitId = :habitId ORDER BY date ASC")
     suspend fun getAllRecordsForHabit(habitId: Long): List<RecordEntity>
 
+    /** Signal that fires whenever the records table changes. */
+    @Query("SELECT COUNT(*) FROM records")
+    fun anyRecordCount(): Flow<Int>
+
     /** Get all records for today for all active habits. */
     @Query("""
         SELECT r.* FROM records r

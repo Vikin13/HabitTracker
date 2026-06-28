@@ -47,9 +47,11 @@ class HabitRepository @Inject constructor(
 
     suspend fun deleteHabit(habit: HabitEntity) = habitDao.delete(habit)
 
-    suspend fun pauseHabit(habitId: Long) = habitDao.pauseHabit(habitId)
+    suspend fun pauseHabit(habitId: Long, pausedAt: Long = System.currentTimeMillis()) =
+        habitDao.pauseHabit(habitId, pausedAt)
 
-    suspend fun resumeHabit(habitId: Long) = habitDao.resumeHabit(habitId)
+    suspend fun resumeHabit(habitId: Long, resumedAt: Long = System.currentTimeMillis()) =
+        habitDao.resumeHabit(habitId, resumedAt)
 
     suspend fun updateSortOrder(habitId: Long, order: Int) = habitDao.updateSortOrder(habitId, order)
 
@@ -96,4 +98,6 @@ class HabitRepository @Inject constructor(
 
     suspend fun getAllRecordsForHabit(habitId: Long): List<RecordEntity> =
         recordDao.getAllRecordsForHabit(habitId)
+
+    val anyRecordChange: Flow<Int> = recordDao.anyRecordCount()
 }

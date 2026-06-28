@@ -12,9 +12,12 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -67,6 +70,7 @@ import com.habittracker.app.ui.BackgroundType
 import com.habittracker.app.ui.backgroundPresets
 import com.habittracker.app.ui.rememberUriPainter
 import com.habittracker.app.ui.scrimAlpha
+import com.habittracker.app.data.local.entity.isCurrentlyPaused
 import androidx.compose.foundation.Image as ComposeImage
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -96,23 +100,22 @@ fun StatsScreen(
                     detail.endDate?.let { DetailRow("End date", it) }
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                     DetailRow("Duration", "${detail.totalDays} days")
-                    DetailRow("Completed", "${detail.completedDays} days")
-                    DetailRow("Missed", "${detail.missedDays} days")
+                    val weeklyTarget = detail.habit.weeklyTarget.coerceAtLeast(1)
+                    DetailRow("Completed", "${(detail.completedDays.toFloat() / detail.expectedTotal.coerceAtLeast(1) * 100).toInt()}%")
                     DetailRow("Streak", "${detail.currentStreak} days (best ${detail.bestStreak})")
-                    DetailRow("Rate", "${(detail.completionRate * 100).toInt()}%")
+                    DetailRow("Weekly target", "$weeklyTarget / week")
+                    DetailRow("This week", "${(detail.currentWeekCount.toFloat() / weeklyTarget * 100).toInt()}%")
                     if (detail.weeklyTrend.isNotEmpty()) {
                         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                         Text("Weekly completions:", style = MaterialTheme.typography.labelLarge)
-                        detail.weeklyTrend.forEach { (week, count) ->
-                            DetailRow(week, "$count / 7")
-                        }
-                    }
-                    if (detail.completionDates.isNotEmpty()) {
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                        Text("Recent completions:", style = MaterialTheme.typography.labelLarge)
-                        detail.completionDates.forEach { date ->
-                            Text("  $date", style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Column(
+                            modifier = Modifier
+                                .heightIn(max = 130.dp)
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            detail.weeklyTrend.forEach { (week, count) ->
+                                DetailRow(week, "$count")
+                            }
                         }
                     }
                 }
@@ -326,7 +329,7 @@ private fun HabitStatCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(stat.habit.name, style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold)
-                    if (stat.habit.isArchived) {
+                    if (stat.habit.isCurrentlyPaused) {
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             "(Paused)",
@@ -341,11 +344,13 @@ private fun HabitStatCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+            val weeklyTarget = stat.habit.weeklyTarget.coerceAtLeast(1)
+            val weekPct = (stat.currentWeekCount.toFloat() / weeklyTarget * 100).toInt()
             Text(
-                "${(stat.completionRate * 100).toInt()}%",
+                "${weekPct}%",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = if (stat.completionRate > 0.7f) MaterialTheme.colorScheme.primary
+                color = if (weekPct >= 100) MaterialTheme.colorScheme.primary
                         else MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
