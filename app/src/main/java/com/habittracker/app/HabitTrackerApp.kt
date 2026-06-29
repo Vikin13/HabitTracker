@@ -4,6 +4,7 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
+import com.habittracker.app.ui.BackgroundManager
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
@@ -11,6 +12,7 @@ class HabitTrackerApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        BackgroundManager.init(this)
         createNotificationChannel()
     }
 

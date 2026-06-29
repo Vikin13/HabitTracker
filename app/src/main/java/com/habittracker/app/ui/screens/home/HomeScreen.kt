@@ -109,7 +109,7 @@ fun HomeScreen(
         ImagePreviewDialog(
             uri = uri,
             onApply = { scale, offsetXDp, offsetYDp ->
-                BackgroundManager.setImageUri(uri.toString(), scale, offsetXDp, offsetYDp)
+                BackgroundManager.setImageFromContentUri(context, uri, scale, offsetXDp, offsetYDp)
                 pendingImageUri = null
             },
             onCancel = { pendingImageUri = null }
