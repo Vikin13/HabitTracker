@@ -76,6 +76,7 @@ import com.habittracker.app.ui.components.HabitItem
 import com.habittracker.app.ui.rememberUriPainter
 import com.habittracker.app.ui.scrimAlpha
 import androidx.compose.foundation.Image as ComposeImage
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -614,11 +615,17 @@ private fun ImagePreviewDialog(
 
 private fun shareApk(context: android.content.Context) {
     try {
-        val apkFile = java.io.File(context.applicationInfo.sourceDir)
+        // Copy the installed APK to cache so FileProvider can serve it safely
+        val sourceFile = File(context.applicationInfo.sourceDir)
+        val destDir = File(context.cacheDir, "shared")
+        destDir.mkdirs()
+        val destFile = File(destDir, "HabitTracker.apk")
+        sourceFile.copyTo(destFile, overwrite = true)
+
         val apkUri = androidx.core.content.FileProvider.getUriForFile(
             context,
             "com.habittracker.app.fileprovider",
-            apkFile
+            destFile
         )
         val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
             type = "application/vnd.android.package-archive"
