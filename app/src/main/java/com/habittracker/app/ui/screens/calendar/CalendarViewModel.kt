@@ -172,7 +172,7 @@ class CalendarViewModel @Inject constructor(
         val lastDayOfMonth = yearMonth.atEndOfMonth()
         val days = mutableListOf<CalendarDay>()
 
-        val startDayOfWeek = (firstDayOfMonth.dayOfWeek.value + 7) % 7 // Mon=0..Sun=6
+        val startDayOfWeek = firstDayOfMonth.dayOfWeek.value - 1 // Mon=0..Sun=6
         val prevMonth = yearMonth.minusMonths(1)
         val prevMonthLastDay = prevMonth.lengthOfMonth()
 

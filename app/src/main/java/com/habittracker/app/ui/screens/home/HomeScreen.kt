@@ -615,21 +615,33 @@ private fun ImagePreviewDialog(
 
 private fun shareApk(context: android.content.Context) {
     try {
-        // Copy the installed APK to cache so FileProvider can serve it safely
-        val sourceFile = File(context.applicationInfo.sourceDir)
         val destDir = File(context.cacheDir, "shared")
         destDir.mkdirs()
-        val destFile = File(destDir, "HabitTracker.apk")
-        sourceFile.copyTo(destFile, overwrite = true)
 
-        val apkUri = androidx.core.content.FileProvider.getUriForFile(
+        // Collect all APK source files (base + split APKs from App Bundle installation)
+        val sourceFiles = mutableListOf<String>()
+        sourceFiles.add(context.applicationInfo.sourceDir)
+        context.applicationInfo.splitSourceDirs?.let { sourceFiles.addAll(it) }
+
+        // Package all split APKs into a single .apks file (ZIP format, installable via SAI)
+        val apksFile = File(destDir, "HabitTracker.apks")
+        java.util.zip.ZipOutputStream(apksFile.outputStream()).use { zipOut ->
+            for (path in sourceFiles) {
+                val source = File(path)
+                zipOut.putNextEntry(java.util.zip.ZipEntry(source.name))
+                source.inputStream().use { it.copyTo(zipOut) }
+                zipOut.closeEntry()
+            }
+        }
+
+        val apksUri = androidx.core.content.FileProvider.getUriForFile(
             context,
             "com.habittracker.app.fileprovider",
-            destFile
+            apksFile
         )
         val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
-            type = "application/vnd.android.package-archive"
-            putExtra(android.content.Intent.EXTRA_STREAM, apkUri)
+            type = "application/zip"
+            putExtra(android.content.Intent.EXTRA_STREAM, apksUri)
             addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         context.startActivity(android.content.Intent.createChooser(intent, "Share APK"))
